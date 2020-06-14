@@ -16,6 +16,8 @@ app.use(express.urlencoded({ extended: false }));
 //parse application/json
 app.use(express.json());
 
+
+
 //cors
 const whitelist = [
   undefined,
@@ -51,6 +53,7 @@ app.use(
     resave: false, // 是否每次都重新儲存會話，建議false
     cookie: {
       maxAge: 60000, // 1分鐘 有效期，單位是毫秒
+      // domain:"localhost"
       // sameSite: false, // this may need to be false is you are accessing from another React app
       // httpOnly: false, // this must be false if you want to access the cookie
       // secure: process.env.NODE_ENV === "production",
@@ -62,20 +65,10 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 
-
-
-
-
-
-
-
-
-
-
 //測試Post
 app.post("/echo", (req, res) => {
   // console.log(req.body)
-  console.log(db)
+  console.log(db);
   req.session.my_var = req.session.my_var || 0;
   req.session.my_var++;
   // res.cookie("test", "test");

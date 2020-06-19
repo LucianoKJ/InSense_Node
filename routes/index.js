@@ -65,6 +65,9 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 
+app.use("/itemlist", require(__dirname + "/itemlist"));
+
+
 //測試Post
 app.post("/echo", (req, res) => {
   // console.log(req.body)

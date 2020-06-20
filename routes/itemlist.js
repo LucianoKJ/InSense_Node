@@ -13,7 +13,7 @@ router.get("/brand/:brand?", async (req, res) => {
 });
 
 router.get("/", (req, res) => {
-  res.json("this is itemslist");
+  res.send("this is itemslist");
 });
 
 module.exports = router;

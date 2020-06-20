@@ -65,7 +65,11 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 
+//各功能路由
+//商品
 app.use("/itemlist", require(__dirname + "/itemlist"));
+//會員
+// app.use("/user", require(__dirname + "/user"));
 
 
 //測試Post

@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/brand/:brand?", async (req, res) => {
   //   res.json(req.params.brand)
   const sql =
-    "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`brandId`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandName`= ?";
+    "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemimg`,`Items`.`itemPrice`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandName`= ?";
 
   const response = await db.query(sql, [req.params.brand]);
   res.json(response[0]);

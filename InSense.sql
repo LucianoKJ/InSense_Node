@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2020 年 06 月 21 日 08:24
+-- 產生時間： 2020 年 06 月 21 日 09:04
 -- 伺服器版本： 10.4.11-MariaDB
 -- PHP 版本： 7.2.30
 
@@ -433,6 +433,7 @@ CREATE TABLE `Users` (
   `userLastName` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `userMobile` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `userEmail` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `userBirthday` date DEFAULT NULL,
   `userGender` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `userCity` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `userDistrict` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -448,8 +449,8 @@ CREATE TABLE `Users` (
 -- 傾印資料表的資料 `Users`
 --
 
-INSERT INTO `Users` (`id`, `userId`, `userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userMobile`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userLevel`, `userProgress`, `created_at`, `updated_at`) VALUES
-(1, '12', '12', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2020-06-12 14:53:26', '2020-06-12 14:53:26');
+INSERT INTO `Users` (`id`, `userId`, `userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userMobile`, `userEmail`, `userBirthday`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userLevel`, `userProgress`, `created_at`, `updated_at`) VALUES
+(1, '12', '12', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2020-06-12 14:53:26', '2020-06-12 14:53:26');
 
 -- --------------------------------------------------------
 

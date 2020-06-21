@@ -106,6 +106,6 @@ app.use((req, res) => {
 });
 
 //設定Port號
-app.listen(3002, function () {
+app.listen(3001, function () {
   console.log("Server Started");
 });

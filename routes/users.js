@@ -4,7 +4,6 @@ var router = express.Router();
 
 router.post("/users/registration?", async (req, res) => {
   const sql = "";
-
   // const response = await db.query(sql, [req.params.brand]);
   res.json();
 });

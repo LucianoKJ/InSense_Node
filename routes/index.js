@@ -16,20 +16,19 @@ app.use(express.urlencoded({ extended: false }));
 //parse application/json
 app.use(express.json());
 
-
-
 //cors
 const whitelist = [
   undefined,
   "http://localhost:3000",
   "http://localhost:3001",
+  "http://localhost:3002",
   "http://127.0.0.1:5500",
   "http://localhost:3030",
 ];
 const corsOptions = {
   credentials: true,
   origin: function (origin, cb) {
-    console.log(origin);
+    // console.log(origin);
     if (whitelist.indexOf(origin) !== -1) {
       cb(null, true);
     } else {
@@ -66,10 +65,18 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 
+//各功能路由
+//商品
+app.use("/itemlist", require(__dirname + "/itemlist"));
+//會員
+app.use("/users", require(__dirname + "/users"));
+//課程
+app.use('/class', require(__dirname + '/class'));
+
 //測試Post
 app.post("/echo", (req, res) => {
   // console.log(req.body)
-  console.log(db);
+  // console.log(db);
   req.session.my_var = req.session.my_var || 0;
   req.session.my_var++;
   // res.cookie("test", "test");

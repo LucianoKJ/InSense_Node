@@ -2,7 +2,7 @@ var express = require("express");
 const { response } = require("express");
 const db = require(__dirname + "/db_connect");
 var router = express.Router();
-var moment = require('moment');
+var moment = require("moment");
 
 //引入libraries中的函式
 var makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
@@ -12,13 +12,13 @@ var checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login
 router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
-  const output = await checkLogin(req)
-  console.log(output)
+  const output = await checkLogin(req);
+  console.log(output);
 
   //新增會員sql
   const sqlAddUser =
     "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
-    
+
   const responseAddUser = await db.query(sqlAddUser, [
     req.body.email,
     req.body.password,
@@ -47,7 +47,7 @@ router.post("/registration", async (req, res) => {
   ]);
 
   //回傳值
-  res.json([responseAddUser, responseAddUserId]);
+  res.json([...responseAddUser, ...responseAddUserId]);
 });
 
 //登入login
@@ -96,7 +96,7 @@ router.post("/logout", async (req, res) => {
   res.json(output);
 });
 
-//檢查有無登入
+//初始檢查有無登入
 router.post("/checklogin", async (req, res) => {
   const output = {
     logInStatus: false,
@@ -120,35 +120,35 @@ router.post("/checklogin", async (req, res) => {
   res.json(output);
 });
 
+// GET user class list
+router.post("/classlist", async (req, res) => {
+  const date = new Date().toLocaleDateString();
+
+  const sql =
+    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+
+  const data = await db.query(sql, [req.body.userId, date]);
+  data[0].forEach((element) => {
+    element.classTime = moment(element.classTime).format("YYYY/MM/DD");
+  });
+  res.json(data[0]);
+});
+
+// GET user all class list
+router.post("/allclasslist", async (req, res) => {
+  const sql =
+    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
+
+  const data = await db.query(sql, [req.body.userId]);
+  data[0].forEach((element) => {
+    element.classTime = moment(element.classTime).format("YYYY/MM/DD");
+  });
+  res.json(data[0]);
+});
+
 /* GET users listing. */
 router.get("/", function (req, res, next) {
   res.send("this is user page");
 });
-
-
-// GET user class list
-router.post('/classlist', async (req, res) => {
-  const date = new Date().toLocaleDateString()
-
-  const sql = 'SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?'
-
-  const data = await db.query(sql, [req.body.userId, date])
-  data[0].forEach(element => {
-    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
-  });
-  res.json(data[0])
-
-})
-
-// GET user all class list
-router.post('/allclasslist', async (req, res) => {
-  const sql = 'SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? '
-
-  const data = await db.query(sql, [req.body.userId])
-  data[0].forEach(element => {
-    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
-  });
-  res.json(data[0])
-})
 
 module.exports = router;

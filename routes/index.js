@@ -18,19 +18,11 @@ app.use(express.json());
 
 //cors
 const whitelist = [
-<<<<<<< HEAD
   undefined,
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3030",
   "http://127.0.0.1:5500",
-=======
-    undefined,
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3030",
-    "http://127.0.0.1:5500",
->>>>>>> f018a9d8394d59493bb58453d97c906db73be48a
 ];
 const corsOptions = {
   credentials: true,

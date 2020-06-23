@@ -84,12 +84,12 @@ router.post("/login", async (req, res) => {
     //紀錄帳密在Session
     req.session.userEmail = req.body.userEmail;
     req.session.userPassword = req.body.userPassword;
-    req.session.userId = responseLogIn[0][0].userId
+    req.session.userId = responseLogIn[0][0].userId;
   } else {
     output.errorMessage = "No_User_Found";
   }
 
-  console.log(req.session)
+  console.log(req.session);
 
   res.json(output);
 });
@@ -99,10 +99,11 @@ router.post("/logout", async (req, res) => {
   // console.log("req.body", req.body);
   delete req.session.userEmail;
   delete req.session.userPassword;
+  delete req.session.userId;
 
   const output = {
     success: true,
-    logOutStatus: req.session ? false : true,
+    logOutStatus: req.session.userId ? false : true,
   };
 
   res.json(output);

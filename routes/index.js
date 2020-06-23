@@ -18,11 +18,11 @@ app.use(express.json());
 
 //cors
 const whitelist = [
-    undefined,
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3030",
-    "http://127.0.0.1:5500",
+  undefined,
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3030",
+  "http://127.0.0.1:5500",
 ];
 const corsOptions = {
     credentials: true,
@@ -43,21 +43,21 @@ const identityKey = "skey";
 
 const sessionStore = new MysqlStore({}, db);
 app.use(
-    session({
-        name: identityKey,
-        secret: "SECRET", // 用來對session id相關的cookie進行簽名
-        store: sessionStore,
-        // store: new FileStore(), // 本地儲存session（純文字文件，也可以選擇其他store，例如redis的）
-        saveUninitialized: false, // 是否自動儲存未初始化的會話，建議false
-        resave: false, // 是否每次都重新儲存會話，建議false
-        cookie: {
-            maxAge: 60000, // 1分鐘 有效期，單位是毫秒
-            // domain:"localhost"
-            // sameSite: false, // this may need to be false is you are accessing from another React app
-            // httpOnly: false, // this must be false if you want to access the cookie
-            // secure: process.env.NODE_ENV === "production",
-        },
-    })
+  session({
+    name: identityKey,
+    secret: "SECRET", // 用來對session id相關的cookie進行簽名
+    store: sessionStore,
+    // store: new FileStore(), // 本地儲存session（純文字文件，也可以選擇其他store，例如redis的）
+    saveUninitialized: false, // 是否自動儲存未初始化的會話，建議false
+    resave: false, // 是否每次都重新儲存會話，建議false
+    cookie: {
+      maxAge: 300000, // 5分鐘 有效期，單位是毫秒
+      // domain:"localhost"
+      // sameSite: false, // this may need to be false is you are accessing from another React app
+      // httpOnly: false, // this must be false if you want to access the cookie
+      // secure: process.env.NODE_ENV === "production",
+    },
+  })
 );
 
 // //設定ejs路徑(暫時用不到)
@@ -108,5 +108,5 @@ app.use((req, res) => {
 
 //設定Port號
 app.listen(3030, function () {
-    console.log("Server Started");
+  console.log("Server Started");
 });

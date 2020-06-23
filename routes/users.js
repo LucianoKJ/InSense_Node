@@ -12,7 +12,7 @@ router.post("/registration", async (req, res) => {
   //新增會員
   const sqlAddUser =
     "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
-
+    
   const responseAddUser = await db.query(sqlAddUser, [
     req.body.email,
     req.body.password,
@@ -46,7 +46,6 @@ router.post("/registration", async (req, res) => {
 //登入login
 router.post("/login", async (req, res) => {
   // console.log("req.body", req.body);
-
   const output = {
     success: false,
     logInStatus: false,
@@ -65,8 +64,12 @@ router.post("/login", async (req, res) => {
     output.success = true;
     output.userInfo = responseLogIn[0][0];
     output.logInStatus = true;
+
+    //紀錄帳密在Session
     req.session.userEmail = req.body.userEmail;
     req.session.userPassword = req.body.userPassword;
+  } else {
+    output.errorMessage = "No_User_Found";
   }
 
   res.json(output);
@@ -75,16 +78,37 @@ router.post("/login", async (req, res) => {
 //登出logout
 router.post("/logout", async (req, res) => {
   // console.log("req.body", req.body);
-  console.log(req.session.userEmail);
-
   delete req.session.userEmail;
   delete req.session.userPassword;
-  console.log(req.session.userEmail);
 
   const output = {
     success: true,
-    logOuttatus: req.session ? false : true,
+    logOutStatus: req.session ? false : true,
   };
+
+  res.json(output);
+});
+
+//檢查有無登入
+router.post("/checklogin", async (req, res) => {
+  const output = {
+    logInStatus: false,
+  };
+
+  if (req.session.userEmail && req.session.userPassword) {
+    const sqlLogIn =
+      "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";
+
+    const responseLogIn = await db.query(sqlLogIn, [
+      req.session.userEmail,
+      req.session.userPassword,
+    ]);
+
+    if (responseLogIn[0].length > 0) {
+      output.userInfo = responseLogIn[0][0];
+      output.logInStatus = true;
+    }
+  }
 
   res.json(output);
 });

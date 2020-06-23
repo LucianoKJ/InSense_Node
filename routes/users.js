@@ -1,53 +1,60 @@
-var express = require("express");
+const express = require("express");
 const { response } = require("express");
 const db = require(__dirname + "/db_connect");
-var router = express.Router();
-var moment = require("moment");
+const router = express.Router();
+const moment = require("moment");
 
 //引入libraries中的函式
-var makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
-var checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login 狀態
+const makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
+const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login 狀態
 
 //註冊會員
 router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
+  //先檢查登入狀態，記得要有req引數
   const output = await checkLogin(req);
   console.log(output);
 
-  //新增會員sql
-  const sqlAddUser =
-    "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
+  //無登入時，才可註冊會員
+  if (!output.logInStatus) {
+    //新增會員sql
+    const sqlAddUser =
+      "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
 
-  const responseAddUser = await db.query(sqlAddUser, [
-    req.body.email,
-    req.body.password,
-    req.body.firstName,
-    req.body.lastName,
-    req.body.email,
-    req.body.gender,
-    req.body.cities,
-    req.body.districts,
-    req.body.address,
-    req.body.postCode,
-    req.body.birthday,
-  ]);
+    const responseAddUser = await db.query(sqlAddUser, [
+      req.body.email,
+      req.body.password,
+      req.body.firstName,
+      req.body.lastName,
+      req.body.email,
+      req.body.gender,
+      req.body.cities,
+      req.body.districts,
+      req.body.address,
+      req.body.postCode,
+      req.body.birthday,
+    ]);
 
-  //插入userId sql
-  const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
+    //插入userId sql
+    const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
-  //取得剛剛插入的id
-  const insertId = responseAddUser[0].insertId.toString();
-  // console.log(insertId);
+    //取得剛剛插入的id
+    const insertId = responseAddUser[0].insertId.toString();
+    // console.log(insertId);
 
-  //插入userId
-  const responseAddUserId = await db.query(sqlAddUserId, [
-    makeFormatedId(5, "U", insertId),
-    insertId,
-  ]);
+    //插入userId
+    const responseAddUserId = await db.query(sqlAddUserId, [
+      makeFormatedId(5, "U", insertId),
+      insertId,
+    ]);
+
+    output.insertUserId = makeFormatedId(5, "U", insertId);
+    output.success = true;
+  }
 
   //回傳值
-  res.json([...responseAddUser, ...responseAddUserId]);
+  res.json(output);
 });
 
 //登入login
@@ -67,6 +74,8 @@ router.post("/login", async (req, res) => {
     req.body.userPassword,
   ]);
 
+  // console.log("responseLogIn", responseLogIn[0][0]);
+
   if (responseLogIn[0].length > 0) {
     output.success = true;
     output.userInfo = responseLogIn[0][0];
@@ -75,9 +84,12 @@ router.post("/login", async (req, res) => {
     //紀錄帳密在Session
     req.session.userEmail = req.body.userEmail;
     req.session.userPassword = req.body.userPassword;
+    req.session.userId = responseLogIn[0][0].userId
   } else {
     output.errorMessage = "No_User_Found";
   }
+
+  console.log(req.session)
 
   res.json(output);
 });

@@ -4,12 +4,16 @@ var router = express.Router();
 
 //引入libraries中的函式
 var makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
+var checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login 狀態
 
 //註冊會員
 router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
-  //新增會員
+  const output = await checkLogin(req)
+  console.log(output)
+
+  //新增會員sql
   const sqlAddUser =
     "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
     
@@ -27,6 +31,7 @@ router.post("/registration", async (req, res) => {
     req.body.birthday,
   ]);
 
+  //插入userId sql
   const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
   //取得剛剛插入的id

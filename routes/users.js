@@ -1,6 +1,8 @@
 var express = require("express");
+const { response } = require("express");
 const db = require(__dirname + "/db_connect");
 var router = express.Router();
+var moment = require('moment');
 
 
 //引入libraries中的函式
@@ -47,5 +49,31 @@ router.post("/registration", async (req, res) => {
 router.get("/", function (req, res, next) {
   res.send("this is user page");
 });
+
+
+// GET user class list
+router.post('/classlist', async (req, res) => {
+  const date = new Date().toLocaleDateString()
+
+  const sql = 'SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?'
+
+  const data = await db.query(sql, [req.body.userId, date])
+  data[0].forEach(element => {
+    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
+  });
+  res.json(data[0])
+
+})
+
+// GET user all class list
+router.post('/allclasslist', async (req, res) => {
+  const sql = 'SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? '
+
+  const data = await db.query(sql, [req.body.userId])
+  data[0].forEach(element => {
+    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
+  });
+  res.json(data[0])
+})
 
 module.exports = router;

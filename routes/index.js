@@ -21,7 +21,7 @@ const whitelist = [
   undefined,
   "http://localhost:3000",
   "http://localhost:3001",
-  "http://localhost:3002",
+  "http://localhost:3030",
   "http://127.0.0.1:5500",
 ];
 const corsOptions = {
@@ -106,6 +106,6 @@ app.use((req, res) => {
 });
 
 //設定Port號
-app.listen(3002, function () {
+app.listen(3030, function () {
   console.log("Server Started");
 });

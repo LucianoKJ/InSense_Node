@@ -9,20 +9,18 @@ router.get('/', async (req, res) => {
   // const response = await db.query(sql, [req.params.brand]);
   const response = await db.query(sql)
   response[0].forEach(element => {
-    element.classTime = element.classTime.toLocaleDateString()
-    element.classTime = moment(element.classTime).format('YYYY-MM-DD').split('-').join('/');
+    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
   });
   res.json(response[0])
 })
 
-// class detail list query
+// class detail query
 router.get('/classdetail/:classid', async (req, res) => {
-  const sql = 'SELECT `ClassDescription`.`classId`,`ClassDescription`.`classContent`,`ClassDescription`.`classContent1`,`ClassDescription`.`classContent2`,`ClassDescription`.`classContent3`, `ClassDescription`.`classContent4`, `Class`.`className`,`Class`.`classImg`, `Class`.`classPrice`, `Class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`ClassDescription` INNER JOIN`Class`ON`ClassDescription`.`classId` = `Class`.`classId` INNER JOIN`Shop` ON`ClassDescription`.`shopId` = `Shop`.`shopId` WHERE`ClassDescription`.`classId` = ?'
+  const sql = 'SELECT `ClassDescription`.`classId`,`ClassDescription`.`classContent`,`ClassDescription`.`classContent1`,`ClassDescription`.`classContent2`,`ClassDescription`.`classContent3`, `ClassDescription`.`classContent4`, `Class`.`className`,`Class`.`classImg`, `Class`.`classPrice`, `Class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`ClassDescription` INNER JOIN`Class`ON`ClassDescription`.`classId` = `Class`.`classId` INNER JOIN`Shop` ON`ClassDescription`.`shopId` = `Shop`.`shopId` WHERE`ClassDescription`.`classId` = ? '
 
   const response = await db.query(sql, [req.params.classid])
   response[0].forEach(element => {
-    element.classTime = element.classTime.toLocaleDateString()
-    element.classTime = moment(element.classTime).format('YYYY-MM-DD').split('-').join('/');
+    element.classTime = moment(element.classTime).format('YYYY/MM/DD')
   });
   res.json(response[0])
 })

@@ -25,15 +25,15 @@ const whitelist = [
   "http://127.0.0.1:5500",
 ];
 const corsOptions = {
-  credentials: true,
-  origin: function (origin, cb) {
-    // console.log(origin);
-    if (whitelist.indexOf(origin) !== -1) {
-      cb(null, true);
-    } else {
-      cb(null, false);
-    }
-  },
+    credentials: true,
+    origin: function (origin, cb) {
+        // console.log(origin);
+        if (whitelist.indexOf(origin) !== -1) {
+            cb(null, true);
+        } else {
+            cb(null, false);
+        }
+    },
 };
 app.use(cors(corsOptions));
 
@@ -67,32 +67,33 @@ app.set("views", __dirname + "/../views");
 //各功能路由
 //商品
 app.use("/itemlist", require(__dirname + "/itemlist"));
+app.use("/itemdetail", require(__dirname + "/itemdetail"));
 //會員
 app.use("/users", require(__dirname + "/users"));
 //課程
-app.use('/class', require(__dirname + '/class'));
+app.use("/class", require(__dirname + "/class"));
 
 //測試Post
 app.post("/echo", (req, res) => {
-  // console.log(req.body)
-  // console.log(db);
-  req.session.my_var = req.session.my_var || 0;
-  req.session.my_var++;
-  // res.cookie("test", "test");
-  res.json(req.session);
+    // console.log(req.body)
+    // console.log(db);
+    req.session.my_var = req.session.my_var || 0;
+    req.session.my_var++;
+    // res.cookie("test", "test");
+    res.json(req.session);
 });
 
 //測試Get
 app.get("/main", (req, res) => {
-  res.render("test");
+    res.render("test");
 });
 
 app.get("/", (req, res) => {
-  const output = {
-    text: "ok from node",
-    session: req.session,
-  };
-  res.json(output);
+    const output = {
+        text: "ok from node",
+        session: req.session,
+    };
+    res.json(output);
 });
 
 //靜態頁面
@@ -100,9 +101,9 @@ app.use(express.static("public"));
 
 //404
 app.use((req, res) => {
-  res.type("text/html");
-  res.status(404);
-  res.send("<h1>404</h1><h1>Not Found</h1>");
+    res.type("text/html");
+    res.status(404);
+    res.send("<h1>404</h1><h1>Not Found</h1>");
 });
 
 //設定Port號

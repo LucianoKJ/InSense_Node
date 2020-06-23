@@ -27,7 +27,7 @@ router.get("/brand/:brand?", async (req, res) => {
 router.get("/category/:category?", async (req, res) => {
     //   res.json(req.params.brand)
 
-    console.log(req.params.brand);
+    // console.log(req.params.brand);
 
     //取得分類資訊
     const getCategory =

@@ -13,8 +13,21 @@ router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
   //先檢查登入狀態，記得要有req引數
+<<<<<<< HEAD
   const output = await checkLogin(req);
   // console.log(output);
+=======
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  console.log(output);
+>>>>>>> 0b2d8101dfd7b9f38a51337556cce21f17ce88e3
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
@@ -23,33 +36,51 @@ router.post("/registration", async (req, res) => {
       "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
 
     const responseAddUser = await db.query(sqlAddUser, [
-      req.body.email,
-      req.body.password,
-      req.body.firstName,
-      req.body.lastName,
-      req.body.email,
-      req.body.gender,
-      req.body.cities,
-      req.body.districts,
-      req.body.address,
-      req.body.postCode,
-      req.body.birthday,
+      req.body.userEmail,
+      req.body.userPassword,
+      req.body.userFirstName,
+      req.body.userLastName,
+      req.body.userEmail,
+      req.body.userGender,
+      req.body.userCity,
+      req.body.userDistrict,
+      req.body.userAddress,
+      req.body.userPostCode,
+      req.body.userBirthday,
     ]);
+<<<<<<< HEAD
     //插入userId sql
     const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
+=======
 
-    //取得剛剛插入的id
-    const insertId = responseAddUser[0].insertId.toString();
-    // console.log(insertId);
+    // console.log("affectedRows", responseAddUser[0].affectedRows);
+>>>>>>> 0b2d8101dfd7b9f38a51337556cce21f17ce88e3
 
-    //插入userId
-    const responseAddUserId = await db.query(sqlAddUserId, [
-      makeFormatedId(5, "U", insertId),
-      insertId,
-    ]);
+    if (responseAddUser[0].affectedRows > 0) {
+      //插入userId sql
+      const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
-    output.insertUserId = makeFormatedId(5, "U", insertId);
-    output.success = true;
+      //取得剛剛插入的id
+      const insertId = responseAddUser[0].insertId.toString();
+      // console.log(insertId);
+
+      //插入userId
+      const responseAddUserId = await db.query(sqlAddUserId, [
+        makeFormatedId(5, "U", insertId),
+        insertId,
+      ]);
+
+      //更改output
+      output.insertUserId = makeFormatedId(5, "U", insertId);
+      output.success = true;
+      output.userInfo = req.body;
+      output.logInStatus = true
+
+      //若註冊成功，則自動生成登入session
+      req.session.userEmail = req.body.userEmail
+      req.session.userPassword = req.body.userPassword
+      req.session.userId = output.insertUserId
+    }
   }
 
   //回傳值
@@ -83,12 +114,12 @@ router.post("/login", async (req, res) => {
     //紀錄帳密在Session
     req.session.userEmail = req.body.userEmail;
     req.session.userPassword = req.body.userPassword;
-    req.session.userId = responseLogIn[0][0].userId
+    req.session.userId = responseLogIn[0][0].userId;
   } else {
     output.errorMessage = "No_User_Found";
   }
 
-  console.log(req.session)
+  console.log(req.session);
 
   res.json(output);
 });
@@ -98,10 +129,11 @@ router.post("/logout", async (req, res) => {
   // console.log("req.body", req.body);
   delete req.session.userEmail;
   delete req.session.userPassword;
+  delete req.session.userId;
 
   const output = {
     success: true,
-    logOutStatus: req.session ? false : true,
+    logOutStatus: req.session.userId ? false : true,
   };
 
   res.json(output);

@@ -13,7 +13,14 @@ router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
   //先檢查登入狀態，記得要有req引數
-  const output = await checkLogin(req);
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
   console.log(output);
 
   //無登入時，才可註冊會員

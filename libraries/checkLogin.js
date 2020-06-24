@@ -3,11 +3,10 @@ const db = require(__dirname + "/../routes/db_connect");
 //每次向後端請求時，需驗證登入狀態
 const checkLogin = async (req) => {
   const output = {
-    success: false,
     logInStatus: false,
   };
 
-  //   console.log(req.session);
+    console.log(req.session);
 
   if (req.session.userEmail && req.session.userPassword) {
     const sqlLogIn =
@@ -29,6 +28,7 @@ const checkLogin = async (req) => {
       delete req.session.userId;
     }
   }
+  // console.log(output)
   return output;
 };
 

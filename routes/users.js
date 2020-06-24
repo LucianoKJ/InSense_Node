@@ -14,7 +14,7 @@ router.post("/registration", async (req, res) => {
 
   //先檢查登入狀態，記得要有req引數
   const output = await checkLogin(req);
-  console.log(output);
+  // console.log(output);
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
@@ -35,7 +35,6 @@ router.post("/registration", async (req, res) => {
       req.body.postCode,
       req.body.birthday,
     ]);
-
     //插入userId sql
     const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 

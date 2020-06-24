@@ -51,7 +51,7 @@ app.use(
     saveUninitialized: false, // 是否自動儲存未初始化的會話，建議false
     resave: false, // 是否每次都重新儲存會話，建議false
     cookie: {
-      maxAge: 300000, // 5分鐘 有效期，單位是毫秒
+      maxAge: 1800000, // 30分鐘 有效期，單位是毫秒
       // domain:"localhost"
       // sameSite: false, // this may need to be false is you are accessing from another React app
       // httpOnly: false, // this must be false if you want to access the cookie

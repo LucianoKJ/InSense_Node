@@ -6,12 +6,7 @@ const checkLogin = async (req) => {
     logInStatus: false,
   };
 
-<<<<<<< HEAD
   // console.log(req.session);
-=======
-    console.log(req.session);
-
->>>>>>> 0b2d8101dfd7b9f38a51337556cce21f17ce88e3
   if (req.session.userEmail && req.session.userPassword) {
     const sqlLogIn =
       "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";

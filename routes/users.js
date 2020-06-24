@@ -13,10 +13,6 @@ router.post("/registration", async (req, res) => {
   // console.log(req.body)
 
   //先檢查登入狀態，記得要有req引數
-<<<<<<< HEAD
-  const output = await checkLogin(req);
-  // console.log(output);
-=======
   const checkLogIn = await checkLogin(req); //使用checkLogin檢查
   //統一的output格式
   const output = {
@@ -27,7 +23,6 @@ router.post("/registration", async (req, res) => {
   };
 
   console.log(output);
->>>>>>> 0b2d8101dfd7b9f38a51337556cce21f17ce88e3
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
@@ -48,13 +43,8 @@ router.post("/registration", async (req, res) => {
       req.body.userPostCode,
       req.body.userBirthday,
     ]);
-<<<<<<< HEAD
-    //插入userId sql
-    const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
-=======
 
     // console.log("affectedRows", responseAddUser[0].affectedRows);
->>>>>>> 0b2d8101dfd7b9f38a51337556cce21f17ce88e3
 
     if (responseAddUser[0].affectedRows > 0) {
       //插入userId sql

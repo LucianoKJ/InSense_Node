@@ -105,8 +105,9 @@ router.patch("/infomodify", async (req, res) => {
       req.body.userBirthday,
       req.session.userId,
     ]);
-    console.log(responseModifyUser[0].changedRows);
 
+    // ================================== //
+    console.log(responseModifyUser[0].changedRows);
     //如果有修改資料
     if (responseModifyUser[0].changedRows) {
       //如果有更改email，要立即更改req.session.userEmail
@@ -119,9 +120,10 @@ router.patch("/infomodify", async (req, res) => {
         ...output.userInfo,
         ...req.body,
       };
-    }else{
-      output.message = "NO_CHANGE"
-    };
+    } else {
+      output.message = "NO_CHANGE";
+    }
+    // ================================== //
   }
 
   res.json(output);
@@ -145,6 +147,7 @@ router.post("/login", async (req, res) => {
   ]);
 
   // console.log("responseLogIn", responseLogIn[0][0]);
+  // ================================== //
 
   if (responseLogIn[0].length > 0) {
     output.success = true;
@@ -158,8 +161,9 @@ router.post("/login", async (req, res) => {
   } else {
     output.errorMessage = "No_User_Found";
   }
+  // ================================== //
 
-  console.log(req.session);
+  // console.log(req.session);
 
   res.json(output);
 });
@@ -206,7 +210,7 @@ router.post("/checklogin", async (req, res) => {
 // GET user class list
 router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
-  const userId = req.session.userId
+  const userId = req.session.userId;
   const sql =
     "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
 
@@ -219,7 +223,7 @@ router.get("/classlist", async (req, res) => {
 
 // GET user all class list
 router.get("/allclasslist", async (req, res) => {
-  const userId = req.session.userId
+  const userId = req.session.userId;
   const sql =
     "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
 

@@ -6,8 +6,7 @@ const checkLogin = async (req) => {
     logInStatus: false,
   };
 
-    console.log(req.session);
-
+  // console.log(req.session);
   if (req.session.userEmail && req.session.userPassword) {
     const sqlLogIn =
       "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";
@@ -22,7 +21,7 @@ const checkLogin = async (req) => {
       output.userInfo = responseLogIn[0][0];
       output.logInStatus = true;
     } else {
-    //若發生找不到該使用者
+      //若發生找不到該使用者
       delete req.session.userEmail;
       delete req.session.userPassword;
       delete req.session.userId;

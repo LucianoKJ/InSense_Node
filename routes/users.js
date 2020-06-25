@@ -154,13 +154,13 @@ router.post("/checklogin", async (req, res) => {
 });
 
 // GET user class list
-router.post("/classlist", async (req, res) => {
+router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
-
+  const userId = req.session.userId
   const sql =
-    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
 
-  const data = await db.query(sql, [req.body.userId, date]);
+  const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
     element.classTime = moment(element.classTime).format("YYYY/MM/DD");
   });
@@ -168,11 +168,12 @@ router.post("/classlist", async (req, res) => {
 });
 
 // GET user all class list
-router.post("/allclasslist", async (req, res) => {
+router.get("/allclasslist", async (req, res) => {
+  const userId = req.session.userId
   const sql =
     "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
 
-  const data = await db.query(sql, [req.body.userId]);
+  const data = await db.query(sql, [userId]);
   data[0].forEach((element) => {
     element.classTime = moment(element.classTime).format("YYYY/MM/DD");
   });

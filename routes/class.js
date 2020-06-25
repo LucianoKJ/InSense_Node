@@ -44,7 +44,7 @@ router.post('/classdetail/:classid', async (req, res) => {
       bookTime: req.body.bookTime,
       userId: req.session.userId,
       classId: req.body.classId,
-      bookStatus: '成功',
+      bookStatus: '預約成功',
       bookTotalPrice: req.body.bookTotalPrice
     }
     // ================================== //
@@ -64,7 +64,6 @@ router.post('/classdetail/:classid', async (req, res) => {
         output.error = '人數超過上限'
       }
     }
-
     // ================================== //
 
     // 情況2:沒選時間
@@ -75,12 +74,8 @@ router.post('/classdetail/:classid', async (req, res) => {
     // ================================== //
 
 
-
-    // 如果error存在 回傳output給前端
-    if (output.error) {
-      res.json(output)
-    }
-    else {
+    // 如果error不存在 則增加book
+    if (!output.error) {
       // 增加book Id 
       const sql = 'INSERT INTO `Book` SET ?'
       const response = await db.query(sql, [data])
@@ -91,7 +86,7 @@ router.post('/classdetail/:classid', async (req, res) => {
           makeFormatedId(6, 'B_', insertId), insertId
         ])
         output.success = true
-        res.json(output)
+
       }
     }
   }

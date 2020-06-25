@@ -63,17 +63,67 @@ router.post("/registration", async (req, res) => {
       //更改output
       output.insertUserId = makeFormatedId(5, "U", insertId);
       output.success = true;
-      output.userInfo = req.body;
-      output.logInStatus = true
+      output.userInfo = { ...req.body, userMobile: "" };
+      output.logInStatus = true;
 
       //若註冊成功，則自動生成登入session
-      req.session.userEmail = req.body.userEmail
-      req.session.userPassword = req.body.userPassword
-      req.session.userId = output.insertUserId
+      req.session.userEmail = req.body.userEmail;
+      req.session.userPassword = req.body.userPassword;
+      req.session.userId = output.insertUserId;
     }
   }
 
   //回傳值
+  res.json(output);
+});
+
+//會員資料修改
+router.patch("/infomodify", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const sqlModifyUser =
+      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
+    const responseModifyUser = await db.query(sqlModifyUser, [
+      req.body.userEmail,
+      req.body.userFirstName,
+      req.body.userLastName,
+      req.body.userEmail,
+      req.body.userGender,
+      req.body.userCity,
+      req.body.userDistrict,
+      req.body.userAddress,
+      req.body.userPostCode,
+      req.body.userBirthday,
+      req.session.userId,
+    ]);
+    console.log(responseModifyUser[0].changedRows);
+
+    //如果有修改資料
+    if (responseModifyUser[0].changedRows) {
+      //如果有更改email，要立即更改req.session.userEmail
+      req.session.userEmail !== req.body.userEmail
+        ? (req.session.userEmail = req.body.userEmail)
+        : "";
+
+      output.success = true;
+      output.userInfo = {
+        ...output.userInfo,
+        ...req.body,
+      };
+    }else{
+      output.message = "NO_CHANGE"
+    };
+  }
+
   res.json(output);
 });
 

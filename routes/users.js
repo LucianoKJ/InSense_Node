@@ -91,11 +91,12 @@ router.patch("/infomodify", async (req, res) => {
 
   if (output.logInStatus) {
     const sqlModifyUser =
-      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
+      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?, `userMobile` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
     const responseModifyUser = await db.query(sqlModifyUser, [
       req.body.userEmail,
       req.body.userFirstName,
       req.body.userLastName,
+      req.body.userMobile,
       req.body.userEmail,
       req.body.userGender,
       req.body.userCity,
@@ -107,7 +108,7 @@ router.patch("/infomodify", async (req, res) => {
     ]);
 
     // ================================== //
-    console.log(responseModifyUser[0].changedRows);
+    // console.log(responseModifyUser[0].changedRows);
     //如果有修改資料
     if (responseModifyUser[0].changedRows) {
       //如果有更改email，要立即更改req.session.userEmail

@@ -158,7 +158,7 @@ router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
   const userId = req.session.userId
   const sql =
-    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+    "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
 
   const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
@@ -166,6 +166,24 @@ router.get("/classlist", async (req, res) => {
   });
   res.json(data[0]);
 });
+
+
+// PATCH book status
+router.patch('/classList', async (req, res) => {
+  const output = {
+    success: false
+  }
+  // 取得傳來的預約編號
+  const bookId = req.body.bookId
+  const sql = 'UPDATE `Book` SET `Book`.`bookStatus` = "取消預約" WHERE `Book`.`bookId` = ? '
+  const data = await db.query(sql, [bookId])
+  // 如果有更新則output增加success及data屬性
+  if (data[0].affectedRows > 0) {
+    output.success = true
+    output.data = data[0]
+  }
+  res.json(output)
+})
 
 // GET user all class list
 router.get("/allclasslist", async (req, res) => {
@@ -179,6 +197,7 @@ router.get("/allclasslist", async (req, res) => {
   });
   res.json(data[0]);
 });
+
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {

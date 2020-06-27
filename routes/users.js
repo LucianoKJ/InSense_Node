@@ -91,7 +91,7 @@ router.patch("/infomodify", async (req, res) => {
 
   if (output.logInStatus) {
     const sqlModifyUser =
-      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?, `userMobile` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
+      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?,`userMobile` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
     const responseModifyUser = await db.query(sqlModifyUser, [
       req.body.userEmail,
       req.body.userFirstName,
@@ -127,6 +127,44 @@ router.patch("/infomodify", async (req, res) => {
     // ================================== //
   }
 
+  res.json(output);
+});
+
+//登入login
+router.post("/login", async (req, res) => {
+  // console.log("req.body", req.body);
+  const output = {
+    success: false,
+    logInStatus: false,
+    body: req.body,
+  };
+
+  const sqlLogIn =
+    "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";
+
+  const responseLogIn = await db.query(sqlLogIn, [
+    req.body.userEmail,
+    req.body.userPassword,
+  ]);
+
+  // console.log("responseLogIn", responseLogIn[0][0]);
+  // ================================== //
+
+  if (responseLogIn[0].length > 0) {
+    output.success = true;
+    output.userInfo = responseLogIn[0][0];
+    output.logInStatus = true;
+
+    //紀錄帳密在Session
+    req.session.userEmail = req.body.userEmail;
+    req.session.userPassword = req.body.userPassword;
+    req.session.userId = responseLogIn[0][0].userId;
+  } else {
+    output.errorMessage = "No_User_Found";
+  }
+  // ================================== //
+
+  // console.log(req.session);
   res.json(output);
 });
 

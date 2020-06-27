@@ -2,6 +2,9 @@ const express = require("express");
 const db = require(__dirname + "/db_connect");
 const router = express.Router();
 
+//檢查登入狀態
+const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login 狀態
+
 //商品分類
 //依品牌
 router.get("/brand/:brand?", async (req, res) => {
@@ -42,6 +45,72 @@ router.get("/category/:category?", async (req, res) => {
     const itemsResponse = await db.query(getItems, [req.params.category]);
     res.json([categoryResponse[0], itemsResponse[0]]);
 });
+
+//取得願望清單
+router.get("/wishlist/brand/:brand", async (req, res) => {
+    //先檢查登入狀態，記得要有req引數
+    const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+    //統一的output格式
+    const output = {
+        success: false,
+        body: req.body,
+        logInStatus: checkLogIn.logInStatus,
+        userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+    };
+
+    console.log(
+        req.session.userEmail,
+        req.session.userPassword,
+        req.session.userId,
+        output.logInStatus
+    );
+    // ================================== //
+    //如果有登入
+    if (output.logInStatus) {
+        //取得該品牌商品清單
+        const getItems =
+            "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
+
+        const itemsResponse = await db.query(getItems, [req.params.brand]);
+        const itemList = itemsResponse[0];
+        console.log(itemList);
+
+        //取得該使用者wishlist
+        const getWishList =
+            "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+        const wishListResponse = await db.query(
+            getWishList,
+            req.session.userId
+        );
+        //確保已經有該會員的欄位
+        if (wishListResponse[0].length) {
+            const rawData = wishListResponse[0][0].itemId;
+
+            //清單裡面有東西才做
+            if (!!rawData && rawData.length > 2) {
+                const rawWishList = JSON.parse(wishListResponse[0][0].itemId);
+                console.log("rawWishList", rawWishList);
+
+                //後端先處理一次wishList（丟回符合該品牌的id）
+                const wishList = rawWishList.filter((wish, index) => {
+                    const existence = itemList.findIndex((item, index) => {
+                        return item.itemId === wish;
+                    });
+                    // console.log(existence);
+                    return existence >= 0 ? true : false;
+                });
+                console.log("wishList", wishList);
+                output.success = true;
+                output.wishList = wishList;
+            }
+        }
+    }
+    // ================================== //
+
+    res.json(output);
+});
+
+//default
 router.get("/", (req, res) => {
     res.json("this is itemslist");
 });

@@ -23,7 +23,6 @@ const whitelist = [
   "http://localhost:3001",
   "http://localhost:3030",
   "http://127.0.0.1:5500",
-  "http://localhost:3030",
 ];
 const corsOptions = {
   credentials: true,
@@ -65,6 +64,7 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");
 
+// ================================== //
 //各功能路由
 //商品
 app.use("/itemlist", require(__dirname + "/itemlist"));

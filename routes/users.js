@@ -91,11 +91,12 @@ router.patch("/infomodify", async (req, res) => {
 
   if (output.logInStatus) {
     const sqlModifyUser =
-      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
+      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?,`userMobile` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
     const responseModifyUser = await db.query(sqlModifyUser, [
       req.body.userEmail,
       req.body.userFirstName,
       req.body.userLastName,
+      req.body.userMobile,
       req.body.userEmail,
       req.body.userGender,
       req.body.userCity,
@@ -107,7 +108,7 @@ router.patch("/infomodify", async (req, res) => {
     ]);
 
     // ================================== //
-    console.log(responseModifyUser[0].changedRows);
+    // console.log(responseModifyUser[0].changedRows);
     //如果有修改資料
     if (responseModifyUser[0].changedRows) {
       //如果有更改email，要立即更改req.session.userEmail
@@ -124,6 +125,90 @@ router.patch("/infomodify", async (req, res) => {
       output.message = "NO_CHANGE";
     }
     // ================================== //
+  }
+
+  res.json(output);
+});
+
+//登入login
+router.post("/login", async (req, res) => {
+  // console.log("req.body", req.body);
+  const output = {
+    success: false,
+    logInStatus: false,
+    body: req.body,
+  };
+
+  const sqlLogIn =
+    "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";
+
+  const responseLogIn = await db.query(sqlLogIn, [
+    req.body.userEmail,
+    req.body.userPassword,
+  ]);
+
+  // console.log("responseLogIn", responseLogIn[0][0]);
+  // ================================== //
+
+  if (responseLogIn[0].length > 0) {
+    output.success = true;
+    output.userInfo = responseLogIn[0][0];
+    output.logInStatus = true;
+
+    //紀錄帳密在Session
+    req.session.userEmail = req.body.userEmail;
+    req.session.userPassword = req.body.userPassword;
+    req.session.userId = responseLogIn[0][0].userId;
+  } else {
+    output.errorMessage = "No_User_Found";
+  }
+  // ================================== //
+
+  // console.log(req.session);
+  res.json(output);
+});
+
+//密碼更改
+router.patch("/changepassword", async (req, res) => {
+  console.log(req.body);
+
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    //判斷舊密碼是否正確
+    if (req.body.oldPassword === output.userInfo.userPassword) {
+      console.log("password correct");
+      const sqlChangePassword =
+        "UPDATE `Users` SET `userPassword` = ? WHERE `userId` = ? ";
+      const responseChangePassword = await db.query(sqlChangePassword, [
+        req.body.newPassword,
+        req.session.userId,
+      ]);
+
+      console.log(responseChangePassword[0]);
+      if (responseChangePassword[0].affectedRows > 0) {
+        output.success = true;
+        output.userInfo = {
+          ...output.userInfo,
+          userPassword: req.body.userPassword,
+        };
+        //更改session密碼
+        req.session.userPassword = req.body.newPassword;
+      } else {
+        output.errorMessage = "NO_CHANGE";
+      }
+    } else {
+      console.log("password incorrect");
+      output.errorMessage = "OLD_PASSWORD_INCORRECT";
+    }
   }
 
   res.json(output);

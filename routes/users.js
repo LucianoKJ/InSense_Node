@@ -130,6 +130,52 @@ router.patch("/infomodify", async (req, res) => {
   res.json(output);
 });
 
+//密碼更改
+router.patch("/changepassword", async (req, res) => {
+  console.log(req.body);
+
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    //判斷舊密碼是否正確
+    if (req.body.oldPassword === output.userInfo.userPassword) {
+      console.log("password correct");
+      const sqlChangePassword =
+        "UPDATE `Users` SET `userPassword` = ? WHERE `userId` = ? ";
+      const responseChangePassword = await db.query(sqlChangePassword, [
+        req.body.newPassword,
+        req.session.userId,
+      ]);
+
+      console.log(responseChangePassword[0]);
+      if (responseChangePassword[0].affectedRows > 0) {
+        output.success = true;
+        output.userInfo = {
+          ...output.userInfo,
+          userPassword: req.body.userPassword,
+        };
+        //更改session密碼
+        req.session.userPassword = req.body.newPassword;
+      } else {
+        output.errorMessage = "NO_CHANGE";
+      }
+    } else {
+      console.log("password incorrect");
+      output.errorMessage = "OLD_PASSWORD_INCORRECT";
+    }
+  }
+
+  res.json(output);
+});
+
 //登入login
 router.post("/login", async (req, res) => {
   // console.log("req.body", req.body);

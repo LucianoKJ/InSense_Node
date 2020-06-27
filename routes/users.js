@@ -63,17 +63,70 @@ router.post("/registration", async (req, res) => {
       //更改output
       output.insertUserId = makeFormatedId(5, "U", insertId);
       output.success = true;
-      output.userInfo = req.body;
-      output.logInStatus = true
+      output.userInfo = { ...req.body, userMobile: "" };
+      output.logInStatus = true;
 
       //若註冊成功，則自動生成登入session
-      req.session.userEmail = req.body.userEmail
-      req.session.userPassword = req.body.userPassword
-      req.session.userId = output.insertUserId
+      req.session.userEmail = req.body.userEmail;
+      req.session.userPassword = req.body.userPassword;
+      req.session.userId = output.insertUserId;
     }
   }
 
   //回傳值
+  res.json(output);
+});
+
+//會員資料修改
+router.patch("/infomodify", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const sqlModifyUser =
+      "UPDATE `Users` SET `userAccount`= ?, `userFirstName`= ?, `userLastName` = ?,`userMobile` = ?, `userEmail` = ?, `userGender` = ?, `userCity` = ?, `userDistrict` = ?, `userAddress` = ?, `userPostCode` = ?, `userBirthday` = ? WHERE `userId` = ?";
+    const responseModifyUser = await db.query(sqlModifyUser, [
+      req.body.userEmail,
+      req.body.userFirstName,
+      req.body.userLastName,
+      req.body.userMobile,
+      req.body.userEmail,
+      req.body.userGender,
+      req.body.userCity,
+      req.body.userDistrict,
+      req.body.userAddress,
+      req.body.userPostCode,
+      req.body.userBirthday,
+      req.session.userId,
+    ]);
+
+    // ================================== //
+    // console.log(responseModifyUser[0].changedRows);
+    //如果有修改資料
+    if (responseModifyUser[0].changedRows) {
+      //如果有更改email，要立即更改req.session.userEmail
+      req.session.userEmail !== req.body.userEmail
+        ? (req.session.userEmail = req.body.userEmail)
+        : "";
+
+      output.success = true;
+      output.userInfo = {
+        ...output.userInfo,
+        ...req.body,
+      };
+    } else {
+      output.message = "NO_CHANGE";
+    }
+    // ================================== //
+  }
+
   res.json(output);
 });
 
@@ -95,6 +148,7 @@ router.post("/login", async (req, res) => {
   ]);
 
   // console.log("responseLogIn", responseLogIn[0][0]);
+  // ================================== //
 
   if (responseLogIn[0].length > 0) {
     output.success = true;
@@ -108,8 +162,93 @@ router.post("/login", async (req, res) => {
   } else {
     output.errorMessage = "No_User_Found";
   }
+  // ================================== //
 
-  console.log(req.session);
+  // console.log(req.session);
+  res.json(output);
+});
+
+//密碼更改
+router.patch("/changepassword", async (req, res) => {
+  console.log(req.body);
+
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    //判斷舊密碼是否正確
+    if (req.body.oldPassword === output.userInfo.userPassword) {
+      console.log("password correct");
+      const sqlChangePassword =
+        "UPDATE `Users` SET `userPassword` = ? WHERE `userId` = ? ";
+      const responseChangePassword = await db.query(sqlChangePassword, [
+        req.body.newPassword,
+        req.session.userId,
+      ]);
+
+      console.log(responseChangePassword[0]);
+      if (responseChangePassword[0].affectedRows > 0) {
+        output.success = true;
+        output.userInfo = {
+          ...output.userInfo,
+          userPassword: req.body.userPassword,
+        };
+        //更改session密碼
+        req.session.userPassword = req.body.newPassword;
+      } else {
+        output.errorMessage = "NO_CHANGE";
+      }
+    } else {
+      console.log("password incorrect");
+      output.errorMessage = "OLD_PASSWORD_INCORRECT";
+    }
+  }
+
+  res.json(output);
+});
+
+//登入login
+router.post("/login", async (req, res) => {
+  // console.log("req.body", req.body);
+  const output = {
+    success: false,
+    logInStatus: false,
+    body: req.body,
+  };
+
+  const sqlLogIn =
+    "SELECT * FROM Users WHERE `userAccount` = ? AND `userPassword` = ?";
+
+  const responseLogIn = await db.query(sqlLogIn, [
+    req.body.userEmail,
+    req.body.userPassword,
+  ]);
+
+  // console.log("responseLogIn", responseLogIn[0][0]);
+  // ================================== //
+
+  if (responseLogIn[0].length > 0) {
+    output.success = true;
+    output.userInfo = responseLogIn[0][0];
+    output.logInStatus = true;
+
+    //紀錄帳密在Session
+    req.session.userEmail = req.body.userEmail;
+    req.session.userPassword = req.body.userPassword;
+    req.session.userId = responseLogIn[0][0].userId;
+  } else {
+    output.errorMessage = "No_User_Found";
+  }
+  // ================================== //
+
+  // console.log(req.session);
 
   res.json(output);
 });
@@ -156,7 +295,7 @@ router.post("/checklogin", async (req, res) => {
 // GET user class list
 router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
-  const userId = req.session.userId
+  const userId = req.session.userId;
   const sql =
     "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
 
@@ -187,7 +326,7 @@ router.patch('/classList', async (req, res) => {
 
 // GET user all class list
 router.get("/allclasslist", async (req, res) => {
-  const userId = req.session.userId
+  const userId = req.session.userId;
   const sql =
     "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
 

@@ -73,8 +73,13 @@ app.use("/itemdetail", require(__dirname + "/itemdetail"));
 app.use("/users", require(__dirname + "/users"));
 //課程
 app.use("/class", require(__dirname + "/class"));
+<<<<<<< HEAD
+//訂單
+app.use('/order', require(__dirname + "/order"))
+=======
 // ================================== //
 
+>>>>>>> a01ac46ce2fed821f53c4c4ee7811ee9e8c63a03
 //測試Post
 app.post("/echo", (req, res) => {
     // console.log(req.body)

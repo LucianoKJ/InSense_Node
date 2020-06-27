@@ -47,7 +47,7 @@ router.get("/category/:category?", async (req, res) => {
 });
 
 //取得願望清單
-router.get("/wishlist/brand/:brand", async (req, res) => {
+router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
     //先檢查登入狀態，記得要有req引數
     const checkLogIn = await checkLogin(req); //使用checkLogin檢查
     //統一的output格式
@@ -68,10 +68,17 @@ router.get("/wishlist/brand/:brand", async (req, res) => {
     //如果有登入
     if (output.logInStatus) {
         //取得該品牌商品清單
-        const getItems =
-            "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
 
-        const itemsResponse = await db.query(getItems, [req.params.brand]);
+        const getSql = () => {
+            if (req.params.brandOrCategory === "brand") {
+                return "SELECT `Items`.`itemId` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
+            } else if (req.params.brandOrCategory === "category") {
+                return "SELECT `Items`.`itemId` FROM `Items` INNER JOIN `ItemCategories` ON `Items`.`itemCategoryId` = `ItemCategories`.`itemCategoryId` WHERE `ItemCategories`.`itemCategoryCode`= ? ";
+            }
+        };
+        const getItems = getSql();
+
+        const itemsResponse = await db.query(getItems, [req.params.name]);
         const itemList = itemsResponse[0];
         console.log(itemList);
 

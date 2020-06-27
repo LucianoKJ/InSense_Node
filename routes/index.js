@@ -21,7 +21,7 @@ const whitelist = [
   undefined,
   "http://localhost:3000",
   "http://localhost:3001",
-  "http://localhost:3002",
+  "http://localhost:3030",
   "http://127.0.0.1:5500",
   "http://localhost:3030",
 ];
@@ -52,7 +52,7 @@ app.use(
     saveUninitialized: false, // 是否自動儲存未初始化的會話，建議false
     resave: false, // 是否每次都重新儲存會話，建議false
     cookie: {
-      maxAge: 60000, // 1分鐘 有效期，單位是毫秒
+      maxAge: 1800000, // 30分鐘 有效期，單位是毫秒
       // domain:"localhost"
       // sameSite: false, // this may need to be false is you are accessing from another React app
       // httpOnly: false, // this must be false if you want to access the cookie
@@ -68,10 +68,14 @@ app.set("views", __dirname + "/../views");
 //各功能路由
 //商品
 app.use("/itemlist", require(__dirname + "/itemlist"));
+app.use("/itemdetail", require(__dirname + "/itemdetail"));
 //會員
 app.use("/users", require(__dirname + "/users"));
 //課程
-app.use('/class', require(__dirname + '/class'));
+app.use("/class", require(__dirname + "/class"));
+
+//
+app.use("/orders", require(__dirname + "/orders"));
 
 //測試Post
 app.post("/echo", (req, res) => {

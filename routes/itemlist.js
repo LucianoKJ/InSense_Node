@@ -106,7 +106,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
                     // console.log(existence);
                     return existence >= 0 ? true : false;
                 });
-                console.log("wishList", wishList);
+                // console.log("wishList", wishList);
                 output.success = true;
                 output.wishList = wishList;
             }

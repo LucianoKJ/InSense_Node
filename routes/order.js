@@ -12,7 +12,7 @@ router.post('/', (req, res) => {
   const sql = 'INSERT INTO `OrderTb` SET ?'
 })
 
-router.get('/orderdetail', async (req, res) => {
+router.get('/ordersdetail', async (req, res) => {
 
   const checkLogIn = await checkLogin(req);
   console.log(req.session)

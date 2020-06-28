@@ -109,6 +109,8 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
                 console.log("wishList", wishList);
                 output.success = true;
                 output.wishList = wishList;
+            } else {
+                output.wishList = [];
             }
         }
     }

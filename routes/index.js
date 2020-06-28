@@ -22,6 +22,8 @@ const whitelist = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3030",
+  "http://localhost:3002",
+  "http://localhost:3003",
   "http://127.0.0.1:5500",
 ];
 const corsOptions = {
@@ -74,7 +76,7 @@ app.use("/users", require(__dirname + "/users"));
 //課程
 app.use("/class", require(__dirname + "/class"));
 
-//
+//訂單
 app.use("/orders", require(__dirname + "/orders"));
 
 //測試Post

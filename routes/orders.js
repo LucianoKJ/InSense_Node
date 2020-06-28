@@ -40,7 +40,7 @@ const GetApi = async (req) => {
 };
 
 //test route
-router.get("/api/test", async (req, res) => {
+router.get("/test", async (req, res) => {
   console.log(req.body);
   const output = {
     success: false,
@@ -55,7 +55,7 @@ router.get("/api/test", async (req, res) => {
   });
 });
 
-router.post("/api/orderList", async (req, res) => {
+router.post("/orderList", async (req, res) => {
   const orderId = req.session.orderId;
   const sql = "INSERT INTO `OrderTb` set ?";
   const [data] = await db.query(sql, [req.body]);

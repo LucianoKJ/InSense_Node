@@ -435,6 +435,53 @@ router.patch("/creditcardmodify", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
+
+//新增信用卡
+router.post("/creditcardadd", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    //新增會員sql
+    const sqlAddCreditCard =
+      "INSERT INTO `CreditCards` (`userId`, `association`,`cdHolder`, `cdMonth`, `cdYear`, `cdNumber`, `billAddressCity`, `billAddressPostCode`, `billAddressDistrict`, `billAddressStreet`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?)";
+
+    const responseAddCreditCard = await db.query(sqlAddCreditCard, [
+      req.session.userId,
+      req.body.association,
+      req.body.cdHolder,
+      req.body.cdMonth,
+      req.body.cdYear,
+      req.body.cdNumber,
+      req.body.billAddressCity,
+      req.body.billAddressPostCode,
+      req.body.billAddressDistrict,
+      req.body.billAddressStreet,
+    ]);
+    // console.log(responseAddCreditCard[0]);
+
+    //若新增成功
+    if (responseAddCreditCard[0].affectedRows) {
+      const newCreditCardList = await getCrediCardInfo(req);
+      console.log("newCreditCardList", newCreditCardList);
+      output.newCreditCardList = newCreditCardList;
+      output.success = true;
+    }else{
+      output.message="NOTHING_ADDED"
+    }
+  }
+
+  res.json(output);
+});
+// ======================================================================================= //
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {

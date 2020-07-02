@@ -9,7 +9,7 @@ const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查log
 router.get("/:itemId?", async (req, res) => {
     //商品
     const getItemDetail =
-        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemImg2`,`Items`.`itemSize`,`Items`.`itemPrice`,`Items`.`itemQty`,`Items`.`discription`,`Items`.`fragranceDetails`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Brand`.`brandId` = `Items`.`brandId`WHERE  `Items`.`itemId`=  ?";
+        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemImg2`,`Items`.`itemSize`,`Items`.`itemPrice`,`Items`.`itemQty`,`Items`.`description`,`Items`.`fragranceDetails`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Brand`.`brandId` = `Items`.`brandId`WHERE  `Items`.`itemId`=  ?";
 
     const itemsDetailResponse = await db.query(getItemDetail, [
         req.params.itemId,

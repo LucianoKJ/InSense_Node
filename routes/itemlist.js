@@ -7,10 +7,13 @@ const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查log
 
 //商品分類
 //依品牌
-router.get("/brand/:brand?", async (req, res) => {
+router.get("/brand/:brand?/:filterlist?", async (req, res) => {
     //   res.json(req.params.brand)
 
-    console.log(req.params.brand);
+    // console.log(req.params.brand);
+    const filterList = req.params.filterlist ? req.params.filterlist : "";
+    const filterArray = filterList.split(",");
+    console.log(filterArray);
 
     //取得品牌資訊
     const getBrand =
@@ -110,6 +113,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
                 output.success = true;
                 output.wishList = wishList;
             } else {
+                output.success = true;
                 output.wishList = [];
             }
         }

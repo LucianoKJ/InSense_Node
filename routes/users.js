@@ -7,6 +7,7 @@ const moment = require("moment");
 //引入libraries中的函式
 const makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
 const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查login 狀態
+// ======================================================================================= //
 
 //註冊會員
 router.post("/registration", async (req, res) => {
@@ -76,6 +77,7 @@ router.post("/registration", async (req, res) => {
   //回傳值
   res.json(output);
 });
+// ======================================================================================= //
 
 //會員資料修改
 router.patch("/infomodify", async (req, res) => {
@@ -129,6 +131,7 @@ router.patch("/infomodify", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
 
 //登入login
 router.post("/login", async (req, res) => {
@@ -167,11 +170,11 @@ router.post("/login", async (req, res) => {
   // console.log(req.session);
   res.json(output);
 });
+// ======================================================================================= //
 
 //密碼更改
 router.patch("/changepassword", async (req, res) => {
-  console.log(req.body);
-
+  // console.log(req.body);
   //先檢查登入狀態，記得要有req引數
   const checkLogIn = await checkLogin(req); //使用checkLogin檢查
   //統一的output格式
@@ -213,6 +216,7 @@ router.patch("/changepassword", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
 
 //登入login
 router.post("/login", async (req, res) => {
@@ -252,6 +256,7 @@ router.post("/login", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
 
 //登出logout
 router.post("/logout", async (req, res) => {
@@ -267,6 +272,7 @@ router.post("/logout", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
 
 //初始檢查有無登入
 router.post("/checklogin", async (req, res) => {
@@ -291,12 +297,14 @@ router.post("/checklogin", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
 
 // GET user class list
 router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
   const userId = req.session.userId;
-  const sql = "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+  const sql =
+    "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
 
   const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
@@ -304,24 +312,26 @@ router.get("/classlist", async (req, res) => {
   });
   res.json(data[0]);
 });
-
+// ======================================================================================= //
 
 // PATCH book status
-router.patch('/classList', async (req, res) => {
+router.patch("/classList", async (req, res) => {
   const output = {
-    success: false
-  }
+    success: false,
+  };
   // 取得傳來的預約編號
-  const bookId = req.body.bookId
-  const sql = 'UPDATE `Book` SET `Book`.`bookStatus` = "取消預約" WHERE `Book`.`bookId` = ? '
-  const data = await db.query(sql, [bookId])
+  const bookId = req.body.bookId;
+  const sql =
+    'UPDATE `Book` SET `Book`.`bookStatus` = "取消預約" WHERE `Book`.`bookId` = ? ';
+  const data = await db.query(sql, [bookId]);
   // 如果有更新則output增加success及data屬性
   if (data[0].affectedRows > 0) {
-    output.success = true
-    output.data = data[0]
+    output.success = true;
+    output.data = data[0];
   }
-  res.json(output)
-})
+  res.json(output);
+});
+// ======================================================================================= //
 
 // GET user all class list
 router.get("/allclasslist", async (req, res) => {
@@ -335,7 +345,96 @@ router.get("/allclasslist", async (req, res) => {
   });
   res.json(data[0]);
 });
+// ======================================================================================= //
 
+//function: 取得信用卡資訊
+const getCrediCardInfo = async (req) => {
+  const sqlCreditCardInfo =
+    "SELECT `id`, `association`, `cdMonth`, `cdYear`, `cdNumber`,`billAddressCity`, `billAddressPostCode`, `billAddressDistrict`, `billAddressStreet`, `isDefault` FROM `CreditCards` WHERE `userId` = ?";
+  const responseCreditCardInfo = await db.query(sqlCreditCardInfo, [
+    req.session.userId,
+  ]);
+  // console.log(responseCreditCardInfo)
+  const creditCardList = responseCreditCardInfo[0];
+
+  //將信用卡號換成後四碼
+  creditCardList.forEach((el) => {
+    el.cdLastFourNumber = el.cdNumber.split("-")[3];
+    delete el.cdNumber;
+  });
+
+  return creditCardList;
+};
+// ======================================================================================= //
+
+//已儲存信用卡資訊
+router.get("/creditcardinfo", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+  //若有登入才進行
+  if (output.logInStatus) {
+    const creditCardList = await getCrediCardInfo(req);
+    //output
+    output.creditCardList = creditCardList;
+    output.success = true;
+  }
+
+  res.json(output);
+});
+// ======================================================================================= //
+
+//modify credit card address
+router.patch("/creditcardmodify", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  //若有登入才進行
+  if (output.logInStatus) {
+    // console.log(req.body);
+    const sqlChangeCreditCard =
+      "UPDATE `CreditCards` SET `billAddressCity` = ?, `billAddressPostCode` = ?, `billAddressDistrict` = ?, `billAddressStreet` = ? WHERE `userId` = ? AND `id`= ?";
+    const responseChangeCreditCard = await db.query(sqlChangeCreditCard, [
+      req.body.billAddressCity,
+      req.body.billAddressPostCode,
+      req.body.billAddressDistrict,
+      req.body.billAddressStreet,
+      req.session.userId,
+      req.body.id,
+    ]);
+
+    // console.log(responseChangeCreditCard[0]);
+    if (
+      responseChangeCreditCard[0] &&
+      responseChangeCreditCard[0].affectedRows
+    ) {
+      output.success = true;
+      if (responseChangeCreditCard[0].changedRows) {
+        // 順便回傳新的creditCardList
+        const newCreditCardList = await getCrediCardInfo(req);
+        console.log("newCreditCardList", newCreditCardList);
+        output.newCreditCardList = newCreditCardList;
+      } else {
+        output.message = "NO_CHANGE";
+      }
+    }
+  }
+
+  res.json(output);
+});
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {

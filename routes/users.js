@@ -474,14 +474,19 @@ router.post("/creditcardadd", async (req, res) => {
       console.log("newCreditCardList", newCreditCardList);
       output.newCreditCardList = newCreditCardList;
       output.success = true;
-    }else{
-      output.message="NOTHING_ADDED"
+    } else {
+      output.message = "NOTHING_ADDED";
     }
   }
 
   res.json(output);
 });
 // ======================================================================================= //
+
+//改變信用卡預設
+router.patch("/creditcardchangedefault/:id", async (req, res) => {
+  res.json(123)
+});
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {

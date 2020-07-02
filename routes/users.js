@@ -485,7 +485,70 @@ router.post("/creditcardadd", async (req, res) => {
 
 //改變信用卡預設
 router.patch("/creditcardchangedefault/:id", async (req, res) => {
-  res.json(123)
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const sqlChangeDefault =
+      "UPDATE `CreditCards` SET `isDefault`= CASE WHEN `id` NOT IN (?) THEN 0 WHEN `id` = ?  THEN 1 END WHERE `userId` = ? ";
+
+    const response = await db.query(sqlChangeDefault, [
+      req.params.id,
+      req.params.id,
+      req.session.userId,
+    ]);
+    console.log(response[0]);
+
+    if (response[0].changedRows) {
+      const newCreditCardList = await getCrediCardInfo(req);
+      // console.log("newCreditCardList", newCreditCardList);
+      output.newCreditCardList = newCreditCardList;
+      output.success = true;
+    } else {
+      output.message = "NOTHING_CHANGED";
+    }
+  }
+  res.json(output);
+});
+// ======================================================================================= //
+
+//creditcarddelete
+router.delete("/creditcarddelete/:id", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    body: req.body,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const creditCardId = req.params.id;
+    const sqlDeleteCard = "Delete FROM `CreditCards` WHERE `id` = ? ";
+
+    const responseDeleteCard = await db.query(sqlDeleteCard, [req.params.id]);
+
+    console.log(responseDeleteCard[0]);
+    if (responseDeleteCard[0].affectedRows) {
+      const newCreditCardList = await getCrediCardInfo(req);
+      // console.log("newCreditCardList", newCreditCardList);
+      output.newCreditCardList = newCreditCardList;
+      output.success = true;
+    }else {
+      output.message = "DELETE_FAILED";
+    }
+  }
+
+  res.json(output);
 });
 
 /* GET users listing. */

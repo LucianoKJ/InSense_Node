@@ -28,7 +28,7 @@ const GetApi = async (req) => {
     return output;
   }
   const sql =
-    "SELECT * FROM `orderitemlist` INNER JOIN `orders` WHERE `orders`.`created_at` = `orderitemlist`.`create_time`";
+    "SELECT * FROM orderitemlist INNER JOIN orders WHERE `orders`.`created_at` = `orderitemlist`.`create_time`";
 
   const [r2] = await db.query(sql);
   if (r2) output.rows = r2;
@@ -56,13 +56,36 @@ router.get("/test", async (req, res) => {
 });
 
 router.post("/orderList", async (req, res) => {
-  const orderId = req.session.orderId;
-  const sql = "INSERT INTO `OrderTb` set ?";
-  const [data] = await db.query(sql, [req.body]);
+  // console.log(req.body.paymentdata)
+  // console.log(req.body.orderDelivery.data)
+  // console.log(req.body.selectCartItems)
+  // console.log(req.body.selectCartTotal)
+  //新增req.body.selectCartTotal至selectCartItems,欄位名稱Total
+  for (let i of req.body.selectCartItems) {
+    i.Total = req.body.selectCartTotal;
+  }
+  // console.log(req.body.selectCartItems)
+  // console.log(Items)
+  // const orderId = req.session.orderId;
+  const creditcardSQL = "INSERT INTO creditcards set ?";
+  const [creditcarddata] = await db.query(creditcardSQL, [
+    req.body.paymentdata,
+  ]);
+
+  const orderDeliverySQL = "INSERT INTO ordercheckoutpage set ?";
+  const [orderDelivery] = await db.query(orderDeliverySQL, [
+    req.body.orderDelivery.data,
+  ]);
+
+  const orderItemSQL = "INSERT INTO orderitemlist set ?";
+  req.body.selectCartItems.forEach((el) => {
+    db.query(orderItemSQL, [el]);
+  });
+
   // data[0].forEach((element) => {
   //   element.classTime = moment(element.classTime).format("YYYY/MM/DD");
   // });
-  res.json(data);
+  // res.json(data);
 });
 
 module.exports = router;

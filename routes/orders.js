@@ -5,6 +5,8 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment");
 
+const makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
+
 //history order required
 const GetApi = async (req) => {
   const perPage = 5;
@@ -56,36 +58,62 @@ router.get("/test", async (req, res) => {
 });
 
 router.post("/orderList", async (req, res) => {
-  // console.log(req.body.paymentdata)
-  // console.log(req.body.orderDelivery.data)
-  // console.log(req.body.selectCartItems)
-  // console.log(req.body.selectCartTotal)
-  //新增req.body.selectCartTotal至selectCartItems,欄位名稱Total
+
+  const output = {
+    success: false,
+    orderId: ''
+  }
+  //新增訂單
+  const orderDetaildata = {
+    userId: req.body.paymentdata.userId,
+    orderStatus: '處理中'
+  }
+
+  const orderSQL = 'INSERT INTO `OrderTb` SET ?'
+  const [orderDetail] = await db.query(orderSQL, [orderDetaildata])
+
+  //增加orderId
+  if (orderDetail.affectedRows > 0) {
+    const sqlOrderId = "UPDATE `OrderTb` SET `orderId` = ? WHERE id = ? "
+    const insertOrderId = orderDetail.insertId.toString()
+    //取得orderId
+    output.orderId = makeFormatedId(6, "O_", insertOrderId)
+    await db.query(sqlOrderId, [output.orderId, insertOrderId])
+  }
+
   for (let i of req.body.selectCartItems) {
     i.Total = req.body.selectCartTotal;
   }
   // console.log(req.body.selectCartItems)
   // console.log(Items)
   // const orderId = req.session.orderId;
-  const creditcardSQL = "INSERT INTO creditcards set ?";
+  const creditcardSQL = "INSERT INTO creditcards SET ?";
   const [creditcarddata] = await db.query(creditcardSQL, [
     req.body.paymentdata,
   ]);
 
-  const orderDeliverySQL = "INSERT INTO ordercheckoutpage set ?";
+  //增加寄送資訊  
+  const orderDeliverySQL = "INSERT INTO ordercheckoutpage SET ?";
+  const orderDeliveryData = req.body.orderDelivery.data
+  orderDeliveryData.orderId = output.orderId
   const [orderDelivery] = await db.query(orderDeliverySQL, [
-    req.body.orderDelivery.data,
+    orderDeliveryData,
   ]);
 
-  const orderItemSQL = "INSERT INTO orderitemlist set ?";
-  req.body.selectCartItems.forEach((el) => {
+  //增加購買的商品列表
+  const orderItemSQL = "INSERT INTO orderitemlist SET ?";
+  const [orderItems] = await req.body.selectCartItems.forEach((el) => {
+    el.orderId = output.orderId
     db.query(orderItemSQL, [el]);
   });
 
+  // 組長寫的
   // data[0].forEach((element) => {
   //   element.classTime = moment(element.classTime).format("YYYY/MM/DD");
   // });
   // res.json(data);
 });
+
+
 
 module.exports = router;

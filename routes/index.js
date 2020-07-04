@@ -62,6 +62,7 @@ app.use(
   })
 );
 
+
 // //設定ejs路徑(暫時用不到)
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/../views");

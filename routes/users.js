@@ -27,51 +27,67 @@ router.post("/registration", async (req, res) => {
 
     //無登入時，才可註冊會員
     if (!output.logInStatus) {
-        //新增會員sql
-        const sqlAddUser =
-            "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
-
-        const responseAddUser = await db.query(sqlAddUser, [
+        //檢查有無重複註冊
+        const sqlCheckAccount = "SELECT * FROM Users WHERE `userAccount` = ? ";
+        const responseCheckAccount = await db.query(sqlCheckAccount, [
             req.body.userEmail,
-            req.body.userPassword,
-            req.body.userFirstName,
-            req.body.userLastName,
-            req.body.userEmail,
-            req.body.userGender,
-            req.body.userCity,
-            req.body.userDistrict,
-            req.body.userAddress,
-            req.body.userPostCode,
-            req.body.userBirthday,
         ]);
 
-        // console.log("affectedRows", responseAddUser[0].affectedRows);
+        if (responseCheckAccount[0].length) {
+            output.errorMessage = "DUPLICATE_ACCOUNT";
+        } else {
+            //新增會員sql
+            const sqlAddUser =
+                "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
 
-        if (responseAddUser[0].affectedRows > 0) {
-            //插入userId sql
-            const sqlAddUserId =
-                "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
-
-            //取得剛剛插入的id
-            const insertId = responseAddUser[0].insertId.toString();
-            // console.log(insertId);
-
-            //插入userId
-            const responseAddUserId = await db.query(sqlAddUserId, [
-                makeFormatedId(5, "U", insertId),
-                insertId,
+            const responseAddUser = await db.query(sqlAddUser, [
+                req.body.userEmail,
+                req.body.userPassword,
+                req.body.userFirstName,
+                req.body.userLastName,
+                req.body.userEmail,
+                req.body.userGender,
+                req.body.userCity,
+                req.body.userDistrict,
+                req.body.userAddress,
+                req.body.userPostCode,
+                req.body.userBirthday,
             ]);
 
-            //更改output
-            output.insertUserId = makeFormatedId(5, "U", insertId);
-            output.success = true;
-            output.userInfo = { ...req.body, userMobile: "" };
-            output.logInStatus = true;
+            if (responseAddUser[0].affectedRows > 0) {
+                //插入userId sql
+                const sqlAddUserId =
+                    "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
-            //若註冊成功，則自動生成登入session
-            req.session.userEmail = req.body.userEmail;
-            req.session.userPassword = req.body.userPassword;
-            req.session.userId = output.insertUserId;
+                //取得剛剛插入的id
+                const insertId = responseAddUser[0].insertId.toString();
+                // console.log(insertId);
+
+                //插入userId
+                const responseAddUserId = await db.query(sqlAddUserId, [
+                    makeFormatedId(5, "U", insertId),
+                    insertId,
+                ]);
+
+                const sqlAddWishList =
+                    "INSERT INTO `WishList` (`userId`, `itemId`) VALUES (?, ?)";
+
+                const responseAddWishList = await db.query(sqlAddWishList, [
+                    makeFormatedId(5, "U", insertId),
+                    ["[]"],
+                ]);
+
+                //更改output
+                output.insertUserId = makeFormatedId(5, "U", insertId);
+                output.success = true;
+                output.userInfo = { ...req.body, userMobile: "" };
+                output.logInStatus = true;
+
+                //若註冊成功，則自動生成登入session
+                req.session.userEmail = req.body.userEmail;
+                req.session.userPassword = req.body.userPassword;
+                req.session.userId = output.insertUserId;
+            }
         }
     }
 
@@ -305,7 +321,7 @@ router.get("/classlist", async (req, res) => {
     const date = new Date().toLocaleDateString();
     const userId = req.session.userId;
     const sql =
-        "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+        "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ? AND `Book`.`bookStatus` = '預約成功'";
 
     const data = await db.query(sql, [userId, date]);
     data[0].forEach((element) => {
@@ -338,7 +354,7 @@ router.patch("/classList", async (req, res) => {
 router.get("/allclasslist", async (req, res) => {
     const userId = req.session.userId;
     const sql =
-        "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
+        "SELECT `Book`.`bookTime`,`Book`.`bookStatus`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
 
     const data = await db.query(sql, [userId]);
     data[0].forEach((element) => {
@@ -519,6 +535,123 @@ router.delete("/deletewish/:itemId", async (req, res) => {
 
         if (responseCancelWish[0].affectedRows) {
             output.success = true;
+        }
+    }
+
+    res.json(output);
+});
+// ======================================================================================= //
+
+//新增信用卡
+router.post("/creditcardadd", async (req, res) => {
+    //先檢查登入狀態，記得要有req引數
+    const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+    //統一的output格式
+    const output = {
+        success: false,
+        body: req.body,
+        logInStatus: checkLogIn.logInStatus,
+        userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+    };
+
+    if (output.logInStatus) {
+        //新增會員sql
+        const sqlAddCreditCard =
+            "INSERT INTO `CreditCards` (`userId`, `association`,`cdHolder`, `cdMonth`, `cdYear`, `cdNumber`, `billAddressCity`, `billAddressPostCode`, `billAddressDistrict`, `billAddressStreet`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?)";
+
+        const responseAddCreditCard = await db.query(sqlAddCreditCard, [
+            req.session.userId,
+            req.body.association,
+            req.body.cdHolder,
+            req.body.cdMonth,
+            req.body.cdYear,
+            req.body.cdNumber,
+            req.body.billAddressCity,
+            req.body.billAddressPostCode,
+            req.body.billAddressDistrict,
+            req.body.billAddressStreet,
+        ]);
+        // console.log(responseAddCreditCard[0]);
+
+        //若新增成功
+        if (responseAddCreditCard[0].affectedRows) {
+            const newCreditCardList = await getCrediCardInfo(req);
+            console.log("newCreditCardList", newCreditCardList);
+            output.newCreditCardList = newCreditCardList;
+            output.success = true;
+        } else {
+            output.message = "NOTHING_ADDED";
+        }
+    }
+
+    res.json(output);
+});
+// ======================================================================================= //
+
+//改變信用卡預設
+router.patch("/creditcardchangedefault/:id", async (req, res) => {
+    //先檢查登入狀態，記得要有req引數
+    const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+    //統一的output格式
+    const output = {
+        success: false,
+        body: req.body,
+        logInStatus: checkLogIn.logInStatus,
+        userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+    };
+
+    if (output.logInStatus) {
+        const sqlChangeDefault =
+            "UPDATE `CreditCards` SET `isDefault`= CASE WHEN `id` NOT IN (?) THEN 0 WHEN `id` = ?  THEN 1 END WHERE `userId` = ? ";
+
+        const response = await db.query(sqlChangeDefault, [
+            req.params.id,
+            req.params.id,
+            req.session.userId,
+        ]);
+        console.log(response[0]);
+
+        if (response[0].changedRows) {
+            const newCreditCardList = await getCrediCardInfo(req);
+            // console.log("newCreditCardList", newCreditCardList);
+            output.newCreditCardList = newCreditCardList;
+            output.success = true;
+        } else {
+            output.message = "NOTHING_CHANGED";
+        }
+    }
+    res.json(output);
+});
+// ======================================================================================= //
+
+//creditcarddelete
+router.delete("/creditcarddelete/:id", async (req, res) => {
+    //先檢查登入狀態，記得要有req引數
+    const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+    //統一的output格式
+    const output = {
+        success: false,
+        body: req.body,
+        logInStatus: checkLogIn.logInStatus,
+        userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+    };
+
+    if (output.logInStatus) {
+        const creditCardId = req.params.id;
+        const sqlDeleteCard = "Delete FROM `CreditCards` WHERE `id` = ? ";
+
+        const responseDeleteCard = await db.query(sqlDeleteCard, [
+            req.params.id,
+        ]);
+
+        console.log(responseDeleteCard[0]);
+        if (responseDeleteCard[0].affectedRows) {
+            const newCreditCardList = await getCrediCardInfo(req);
+            // console.log("newCreditCardList", newCreditCardList);
+            output.newCreditCardList = newCreditCardList;
+            output.success = true;
+        } else {
+            output.message = "DELETE_FAILED";
         }
     }
 

@@ -27,50 +27,67 @@ router.post("/registration", async (req, res) => {
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
-    //新增會員sql
-    const sqlAddUser =
-      "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
-
-    const responseAddUser = await db.query(sqlAddUser, [
-      req.body.userEmail,
-      req.body.userPassword,
-      req.body.userFirstName,
-      req.body.userLastName,
-      req.body.userEmail,
-      req.body.userGender,
-      req.body.userCity,
-      req.body.userDistrict,
-      req.body.userAddress,
-      req.body.userPostCode,
-      req.body.userBirthday,
+    //檢查有無重複註冊
+    const sqlCheckAccount =
+      "SELECT * FROM Users WHERE `userAccount` = ? ";
+    const responseCheckAccount = await db.query(sqlCheckAccount, [
+      req.body.userEmail
     ]);
 
-    // console.log("affectedRows", responseAddUser[0].affectedRows);
+    if (responseCheckAccount[0].length) {
+      output.errorMessage = "DUPLICATE_ACCOUNT";
+    } else {
+      //新增會員sql
+      const sqlAddUser =
+        "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
 
-    if (responseAddUser[0].affectedRows > 0) {
-      //插入userId sql
-      const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
-
-      //取得剛剛插入的id
-      const insertId = responseAddUser[0].insertId.toString();
-      // console.log(insertId);
-
-      //插入userId
-      const responseAddUserId = await db.query(sqlAddUserId, [
-        makeFormatedId(5, "U", insertId),
-        insertId,
+      const responseAddUser = await db.query(sqlAddUser, [
+        req.body.userEmail,
+        req.body.userPassword,
+        req.body.userFirstName,
+        req.body.userLastName,
+        req.body.userEmail,
+        req.body.userGender,
+        req.body.userCity,
+        req.body.userDistrict,
+        req.body.userAddress,
+        req.body.userPostCode,
+        req.body.userBirthday,
       ]);
 
-      //更改output
-      output.insertUserId = makeFormatedId(5, "U", insertId);
-      output.success = true;
-      output.userInfo = { ...req.body, userMobile: "" };
-      output.logInStatus = true;
+      if (responseAddUser[0].affectedRows > 0) {
+        //插入userId sql
+        const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
-      //若註冊成功，則自動生成登入session
-      req.session.userEmail = req.body.userEmail;
-      req.session.userPassword = req.body.userPassword;
-      req.session.userId = output.insertUserId;
+        //取得剛剛插入的id
+        const insertId = responseAddUser[0].insertId.toString();
+        // console.log(insertId);
+
+        //插入userId
+        const responseAddUserId = await db.query(sqlAddUserId, [
+          makeFormatedId(5, "U", insertId),
+          insertId,
+        ]);
+
+        const sqlAddWishList =
+          "INSERT INTO `WishList` (`userId`, `itemId`) VALUES (?, ?)";
+
+        const responseAddWishList = await db.query(sqlAddWishList, [
+          makeFormatedId(5, "U", insertId),
+          ["[]"],
+        ]);
+
+        //更改output
+        output.insertUserId = makeFormatedId(5, "U", insertId);
+        output.success = true;
+        output.userInfo = { ...req.body, userMobile: "" };
+        output.logInStatus = true;
+
+        //若註冊成功，則自動生成登入session
+        req.session.userEmail = req.body.userEmail;
+        req.session.userPassword = req.body.userPassword;
+        req.session.userId = output.insertUserId;
+      }
     }
   }
 
@@ -543,7 +560,7 @@ router.delete("/creditcarddelete/:id", async (req, res) => {
       // console.log("newCreditCardList", newCreditCardList);
       output.newCreditCardList = newCreditCardList;
       output.success = true;
-    }else {
+    } else {
       output.message = "DELETE_FAILED";
     }
   }

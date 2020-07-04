@@ -9,7 +9,7 @@ const checkLogin = require(__dirname + "/../libraries/checkLogin"); // 檢查log
 //依品牌
 router.get("/brand/:brand?/:filterlist?", async (req, res) => {
     //   res.json(req.params.brand)
-
+    2;
     // console.log(req.params.brand);
     const filterList = req.params.filterlist ? req.params.filterlist : "";
     const filterArray = filterList.split(",");
@@ -23,7 +23,7 @@ router.get("/brand/:brand?/:filterlist?", async (req, res) => {
 
     //依據品牌，選定商品
     const getItems =
-        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
+        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Items`.`itemCategoryId`, `Items`.`brandId`,`Items`.`fragranceId`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
 
     const itemsResponse = await db.query(getItems, [req.params.brand]);
     res.json([brandResponse[0], itemsResponse[0]]);
@@ -43,7 +43,7 @@ router.get("/category/:category?", async (req, res) => {
 
     //依據分類，選定商品
     const getItems =
-        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`, `Items`.`itemQty`, `ItemCategories`.`itemCategoryName` FROM `Items` INNER JOIN `ItemCategories` ON `Items`.`itemCategoryId` = `ItemCategories`.`itemCategoryId` WHERE `ItemCategories`.`itemCategoryCode`= ? ";
+        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`, `Items`.`itemQty`, `Items`.`brandId`,`Items`.`fragranceId`,`ItemCategories`.`itemCategoryName` FROM `Items` INNER JOIN `ItemCategories` ON `Items`.`itemCategoryId` = `ItemCategories`.`itemCategoryId` WHERE `ItemCategories`.`itemCategoryCode`= ? ";
 
     const itemsResponse = await db.query(getItems, [req.params.category]);
     res.json([categoryResponse[0], itemsResponse[0]]);
@@ -61,12 +61,12 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
         userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
     };
 
-    console.log(
-        req.session.userEmail,
-        req.session.userPassword,
-        req.session.userId,
-        output.logInStatus
-    );
+    // console.log(
+    //     req.session.userEmail,
+    //     req.session.userPassword,
+    //     req.session.userId,
+    //     output.logInStatus
+    // );
     // ================================== //
     //如果有登入
     if (output.logInStatus) {

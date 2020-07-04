@@ -321,7 +321,7 @@ router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
   const userId = req.session.userId;
   const sql =
-    "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ?";
+    "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ? AND `Book`.`bookStatus` = '預約成功'";
 
   const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
@@ -354,7 +354,7 @@ router.patch("/classList", async (req, res) => {
 router.get("/allclasslist", async (req, res) => {
   const userId = req.session.userId;
   const sql =
-    "SELECT `Book`.`bookTime`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
+    "SELECT `Book`.`bookTime`,`Book`.`bookStatus`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
 
   const data = await db.query(sql, [userId]);
   data[0].forEach((element) => {

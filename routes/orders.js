@@ -5,6 +5,8 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment");
 
+const makeFormatedId = require(__dirname + "/../libraries/makeFormatedId"); // 製作格式化的ID
+
 //history order required
 const GetApi = async (req) => {
   const perPage = 5;
@@ -55,37 +57,98 @@ router.get("/test", async (req, res) => {
   });
 });
 
-router.post("/orderList", async (req, res) => {
-  // console.log(req.body.paymentdata)
-  // console.log(req.body.orderDelivery.data)
-  // console.log(req.body.selectCartItems)
-  // console.log(req.body.selectCartTotal)
-  //新增req.body.selectCartTotal至selectCartItems,欄位名稱Total
-  for (let i of req.body.selectCartItems) {
-    i.Total = req.body.selectCartTotal;
+
+router.get('/orderDetail/:orderId', async (req, res) => {
+  const orderId = req.params.orderId
+
+  const output = {
+    success: false,
+    orderId: orderId
   }
-  // console.log(req.body.selectCartItems)
-  // console.log(Items)
-  // const orderId = req.session.orderId;
-  const creditcardSQL = "INSERT INTO creditcards set ?";
+
+  const orderSql = "SELECT `totalPrice` FROM `OrderTb` WHERE `OrderId` = ?"
+  const [getTotalPrice] = await db.query(orderSql, [orderId])
+  output.totalPrice = getTotalPrice[0].totalPrice
+
+  const deliverySql = "SELECT `userLastName`,`userFirstName`,`userPostCode`,`userCity`,`userDistrict`,`userAddress`,`userPhone` FROM `ordercheckoutpage` WHERE `orderId` = ?"
+
+  const [getDeliveryData] = await db.query(deliverySql, [orderId])
+  output.deliveryData = getDeliveryData[0]
+
+  const creditCardSql = "SELECT `association`,`cdNumber`,`cdMonth`,`cdYear`,`cdHolder`,`billAddressPostCode`,`billAddressCity`,`billAddressDistrict`,`billAddressStreet` FROM `paymentCreditCards` WHERE `orderId` = ?"
+
+  const [getCreditCardData] = await db.query(creditCardSql, [orderId])
+  output.creditCardData = getCreditCardData
+
+  const orderItemSql = "SELECT `orderitemlist`.`itemimg`,`orderitemlist`.`itemName`,`orderitemlist`.`itemPrice`,`orderitemlist`.`quantity`,`orderitemlist`.`itemId`,`items`.`itemSize` FROM `orderitemlist` INNER JOIN `items` ON `orderitemlist`.`itemId` = `items`.`itemId` WHERE `orderitemlist`.`orderId`=?"
+  const [getOrderItem] = await db.query(orderItemSql, [orderId])
+  output.orderItems = getOrderItem
+
+  output.success = true
+  res.json(output)
+
+})
+
+
+router.post("/orderList", async (req, res) => {
+  console.log(req.body.selectCartItems)
+  const output = {
+    success: false,
+    orderId: ''
+  }
+  //新增訂單
+  const orderDetaildata = {
+    userId: req.body.paymentdata.userId,
+    orderStatus: '處理中',
+    totalPrice: req.body.selectCartTotal
+  }
+
+
+  const orderSQL = 'INSERT INTO `OrderTb` SET ?'
+  const [orderDetail] = await db.query(orderSQL, [orderDetaildata])
+
+
+  //增加orderId
+  if (orderDetail.affectedRows > 0) {
+    const sqlOrderId = "UPDATE `OrderTb` SET `orderId` = ? WHERE id = ? "
+    const insertOrderId = orderDetail.insertId.toString()
+    //取得orderId
+    output.orderId = makeFormatedId(6, "O_", insertOrderId)
+    await db.query(sqlOrderId, [output.orderId, insertOrderId])
+  }
+
+
+  const creditcardSQL = "INSERT INTO paymentCreditCards SET ?";
+  const orderCreditCardData = req.body.paymentdata
+  orderCreditCardData.orderId = output.orderId
   const [creditcarddata] = await db.query(creditcardSQL, [
     req.body.paymentdata,
   ]);
 
-  const orderDeliverySQL = "INSERT INTO ordercheckoutpage set ?";
+  //增加寄送資訊  
+  const orderDeliverySQL = "INSERT INTO ordercheckoutpage SET ?";
+  const orderDeliveryData = req.body.orderDelivery.data
+  orderDeliveryData.orderId = output.orderId
   const [orderDelivery] = await db.query(orderDeliverySQL, [
-    req.body.orderDelivery.data,
+    orderDeliveryData,
   ]);
 
-  const orderItemSQL = "INSERT INTO orderitemlist set ?";
+  //增加購買的商品列表
+  const orderItemSQL = "INSERT INTO orderitemlist (`itemId`,`itemName`,`itemPrice`,`itemimg`,`quantity`,`orderId`) VALUES (?,?,?,?,?,?)";
   req.body.selectCartItems.forEach((el) => {
-    db.query(orderItemSQL, [el]);
+    el.orderId = output.orderId
+    db.query(orderItemSQL, [el.itemId, el.itemName, el.itemPrice, el.itemimg, el.quantity, el.orderId]);
   });
+  output.success = true
+  console.log(output)
 
+  // 組長寫的
   // data[0].forEach((element) => {
   //   element.classTime = moment(element.classTime).format("YYYY/MM/DD");
   // });
-  // res.json(data);
+  res.json(output);
 });
+
+
 
 module.exports = router;

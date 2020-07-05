@@ -81,7 +81,7 @@ app.use("/class", require(__dirname + "/class"));
 app.use("/orders", require(__dirname + "/orders"));
 
 //send mail test
-app.use("/sendmail", require(__dirname + "/sendmail"));
+app.use("/passwordissue", require(__dirname + "/passwordIssue"));
 
 //測試Post
 app.post("/echo", (req, res) => {

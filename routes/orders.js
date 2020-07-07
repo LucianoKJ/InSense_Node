@@ -97,6 +97,8 @@ router.get('/getCreditCardInfo', async (req, res) => {
   const getCreditCardInfoSql = "SELECT `association`,`cdNumber`,`cdMonth`,`cdYear`,`cdHolder`,`billAddressCity`,`billAddressPostCode`,`billAddressDistrict`,`billAddressStreet` FROM `creditcards` WHERE `userId` = ? AND `isDefault` = 1"
 
   const [response] = await db.query(getCreditCardInfoSql, [userId])
+  response[0].cdMonth = response[0].cdMonth < 10 ? `0${response[0].cdMonth}` : response[0].cdMonth
+  response[0].cdYear = response[0].cdYear < 10 ? `0${response[0].cdYear}` : response[0].cdYear
   output.creditCardInfo = response[0]
   output.success = true
   res.json(output)

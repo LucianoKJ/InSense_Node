@@ -79,7 +79,7 @@ router.post("/registration", async (req, res) => {
         //更改output
         output.insertUserId = makeFormatedId(5, "U", insertId);
         output.success = true;
-        output.userInfo = { ...req.body, userMobile: "" };
+        output.userInfo = {...req.body, userMobile: "" };
         output.logInStatus = true;
 
         //若註冊成功，則自動生成登入session

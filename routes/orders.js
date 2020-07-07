@@ -35,7 +35,6 @@ const GetApi = async (req) => {
   const [r2] = await db.query(sql);
   if (r2) output.rows = r2;
   for (let i of r2) {
-    // console.log(i.created_at)
     i.created_at = moment(i.created_at).format("YYYY-MM-DD");
   }
   return output;
@@ -58,16 +57,17 @@ router.get("/test", async (req, res) => {
 });
 
 
-router.get('/orderDetail/:orderId', async (req, res) => {
+router.get('/orderdetail/:orderId', async (req, res) => {
   const orderId = req.params.orderId
-
   const output = {
     success: false,
     orderId: orderId
   }
 
   const orderSql = "SELECT `totalPrice` FROM `OrderTb` WHERE `OrderId` = ?"
+
   const [getTotalPrice] = await db.query(orderSql, [orderId])
+  console.log(getTotalPrice)
   output.totalPrice = getTotalPrice[0].totalPrice
 
   const deliverySql = "SELECT `userLastName`,`userFirstName`,`userPostCode`,`userCity`,`userDistrict`,`userAddress`,`userPhone` FROM `ordercheckoutpage` WHERE `orderId` = ?"
@@ -89,9 +89,20 @@ router.get('/orderDetail/:orderId', async (req, res) => {
 
 })
 
+router.get('/getCreditCardInfo', async (req, res) => {
+  const userId = req.session.userId
+  const output = {
+    success: false,
+  }
+  const getCreditCardInfoSql = "SELECT `association`,`cdNumber`,`cdMonth`,`cdYear`,`cdHolder`,`billAddressCity`,`billAddressPostCode`,`billAddressDistrict`,`billAddressStreet` FROM `creditcards` WHERE `userId` = ? AND `isDefault` = 1"
+
+  const [response] = await db.query(getCreditCardInfoSql, [userId])
+  output.creditCardInfo = response[0]
+  output.success = true
+  res.json(output)
+})
 
 router.post("/orderList", async (req, res) => {
-  console.log(req.body.selectCartItems)
   const output = {
     success: false,
     orderId: ''
@@ -102,7 +113,6 @@ router.post("/orderList", async (req, res) => {
     orderStatus: '處理中',
     totalPrice: req.body.selectCartTotal
   }
-
 
   const orderSQL = 'INSERT INTO `OrderTb` SET ?'
   const [orderDetail] = await db.query(orderSQL, [orderDetaildata])
@@ -121,31 +131,31 @@ router.post("/orderList", async (req, res) => {
   const creditcardSQL = "INSERT INTO paymentCreditCards SET ?";
   const orderCreditCardData = req.body.paymentdata
   orderCreditCardData.orderId = output.orderId
-  const [creditcarddata] = await db.query(creditcardSQL, [
-    req.body.paymentdata,
-  ]);
+  const [creditcarddata] = await db.query(creditcardSQL, [req.body.paymentdata,]);
 
   //增加寄送資訊  
   const orderDeliverySQL = "INSERT INTO ordercheckoutpage SET ?";
   const orderDeliveryData = req.body.orderDelivery.data
   orderDeliveryData.orderId = output.orderId
-  const [orderDelivery] = await db.query(orderDeliverySQL, [
-    orderDeliveryData,
-  ]);
+  const [orderDelivery] = await db.query(orderDeliverySQL, [orderDeliveryData,]);
+  //增加deliveryId
+  if (orderDelivery.affectedRows > 0) {
+    const sqlDeliveryId = "UPDATE `ordercheckoutpage` SET `deliveryId` = ? WHERE id = ? "
+    const insertDeliveryId = orderDelivery.insertId.toString()
+    //增加deliveryId
+    output.deliveryId = makeFormatedId(6, "D_", insertDeliveryId)
+    await db.query(sqlDeliveryId, [output.deliveryId, insertDeliveryId])
+  }
 
   //增加購買的商品列表
-  const orderItemSQL = "INSERT INTO orderitemlist (`itemId`,`itemName`,`itemPrice`,`itemimg`,`quantity`,`orderId`) VALUES (?,?,?,?,?,?)";
+  const orderItemSQL = "INSERT INTO orderitemlist (`itemId`,`itemName`,`itemPrice`,`itemimg`,`quantity`,`orderId`,`userId`) VALUES (?,?,?,?,?,?,?)";
   req.body.selectCartItems.forEach((el) => {
     el.orderId = output.orderId
-    db.query(orderItemSQL, [el.itemId, el.itemName, el.itemPrice, el.itemimg, el.quantity, el.orderId]);
+    el.userId = orderDetaildata.userId
+    db.query(orderItemSQL, [el.itemId, el.itemName, el.itemPrice, el.itemimg, el.quantity, el.orderId, el.userId]);
   });
   output.success = true
-  console.log(output)
 
-  // 組長寫的
-  // data[0].forEach((element) => {
-  //   element.classTime = moment(element.classTime).format("YYYY/MM/DD");
-  // });
   res.json(output);
 });
 

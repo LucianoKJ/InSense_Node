@@ -27,50 +27,66 @@ router.post("/registration", async (req, res) => {
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
-    //新增會員sql
-    const sqlAddUser =
-      "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
-
-    const responseAddUser = await db.query(sqlAddUser, [
+    //檢查有無重複註冊
+    const sqlCheckAccount = "SELECT * FROM Users WHERE `userAccount` = ? ";
+    const responseCheckAccount = await db.query(sqlCheckAccount, [
       req.body.userEmail,
-      req.body.userPassword,
-      req.body.userFirstName,
-      req.body.userLastName,
-      req.body.userEmail,
-      req.body.userGender,
-      req.body.userCity,
-      req.body.userDistrict,
-      req.body.userAddress,
-      req.body.userPostCode,
-      req.body.userBirthday,
     ]);
 
-    // console.log("affectedRows", responseAddUser[0].affectedRows);
+    if (responseCheckAccount[0].length) {
+      output.errorMessage = "DUPLICATE_ACCOUNT";
+    } else {
+      //新增會員sql
+      const sqlAddUser =
+        "INSERT INTO `Users` (`userAccount`, `userPassword`, `userFirstName`, `userLastName`, `userEmail`, `userGender`, `userCity`, `userDistrict`, `userAddress`, `userPostCode`, `userBirthday`) VALUES (?, ? ,?, ?, ?, ? , ?, ?, ?, ?, ?)";
 
-    if (responseAddUser[0].affectedRows > 0) {
-      //插入userId sql
-      const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
-
-      //取得剛剛插入的id
-      const insertId = responseAddUser[0].insertId.toString();
-      // console.log(insertId);
-
-      //插入userId
-      const responseAddUserId = await db.query(sqlAddUserId, [
-        makeFormatedId(5, "U", insertId),
-        insertId,
+      const responseAddUser = await db.query(sqlAddUser, [
+        req.body.userEmail,
+        req.body.userPassword,
+        req.body.userFirstName,
+        req.body.userLastName,
+        req.body.userEmail,
+        req.body.userGender,
+        req.body.userCity,
+        req.body.userDistrict,
+        req.body.userAddress,
+        req.body.userPostCode,
+        req.body.userBirthday,
       ]);
 
-      //更改output
-      output.insertUserId = makeFormatedId(5, "U", insertId);
-      output.success = true;
-      output.userInfo = { ...req.body, userMobile: "" };
-      output.logInStatus = true;
+      if (responseAddUser[0].affectedRows > 0) {
+        //插入userId sql
+        const sqlAddUserId = "UPDATE `Users` SET `userId`= ? WHERE `id` = ?";
 
-      //若註冊成功，則自動生成登入session
-      req.session.userEmail = req.body.userEmail;
-      req.session.userPassword = req.body.userPassword;
-      req.session.userId = output.insertUserId;
+        //取得剛剛插入的id
+        const insertId = responseAddUser[0].insertId.toString();
+        // console.log(insertId);
+
+        //插入userId
+        const responseAddUserId = await db.query(sqlAddUserId, [
+          makeFormatedId(5, "U", insertId),
+          insertId,
+        ]);
+
+        const sqlAddWishList =
+          "INSERT INTO `WishList` (`userId`, `itemId`) VALUES (?, ?)";
+
+        const responseAddWishList = await db.query(sqlAddWishList, [
+          makeFormatedId(5, "U", insertId),
+          ["[]"],
+        ]);
+
+        //更改output
+        output.insertUserId = makeFormatedId(5, "U", insertId);
+        output.success = true;
+        output.userInfo = { ...req.body, userMobile: "" };
+        output.logInStatus = true;
+
+        //若註冊成功，則自動生成登入session
+        req.session.userEmail = req.body.userEmail;
+        req.session.userPassword = req.body.userPassword;
+        req.session.userId = output.insertUserId;
+      }
     }
   }
 
@@ -430,6 +446,99 @@ router.patch("/creditcardmodify", async (req, res) => {
       } else {
         output.message = "NO_CHANGE";
       }
+    }
+  }
+
+  res.json(output);
+});
+// ======================================================================================= //
+
+//取得所有願望清單function
+const getAllWishList = async (req) => {
+  //取得該使用者wishlist
+  const getAllWishList = "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+  const wishListResponse = await db.query(getAllWishList, req.session.userId);
+  //取得願望清單
+  const allWishList = JSON.parse(wishListResponse[0][0].itemId);
+  return allWishList;
+};
+
+//取得wishlist
+router.get("/wishlist", async (req, res) => {
+  console.log("okokokok");
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    //取得該使用者wishlist
+    const allWishList = await getAllWishList(req);
+    //生成問號
+    const questionMark = () => {
+      if (allWishList.length) {
+        const newArray = allWishList.map((el) => {
+          return "?";
+        });
+        return "WHERE `itemId` in (" + newArray.join(" , ") + ")";
+      }else{
+        return "WHERE `itemId` = '' "
+      }
+    };
+    // console.log(questionMark());
+    const sqlItemsWished =
+      "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Items`.`itemSize` FROM `Items` " +
+      questionMark();
+    // console.log(getItemsWished);
+
+    const itemsWishedResponse = await db.query(sqlItemsWished, allWishList);
+    const itemsWished = itemsWishedResponse[0];
+
+    output.itemsWished = itemsWished;
+    output.success = true;
+  } else {
+    output.itemsWished = [];
+  }
+  // ================================== //
+
+  res.json(output);
+});
+// ======================================================================================= //
+
+//cancelWish
+router.delete("/deletewish/:itemId", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+  const itemId = req.params.itemId;
+
+  if (output.logInStatus) {
+    //先取得原先陣列
+    const originalWishList = await getAllWishList(req);
+    const newWishList = originalWishList.filter((el) => {
+      return itemId !== el ? true : false;
+    });
+    console.log(newWishList);
+
+    const sqlCancelWish =
+      "UPDATE `WishList` SET `itemId`= ? WHERE `userId` = ? ";
+    const responseCancelWish = await db.query(sqlCancelWish, [
+      JSON.stringify(newWishList),
+      req.session.userId,
+    ]);
+    console.log(responseCancelWish[0]);
+
+    if (responseCancelWish[0].affectedRows) {
+      output.success = true;
     }
   }
 

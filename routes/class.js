@@ -14,11 +14,12 @@ router.get("/", async (req, res) => {
     success: false,
     logInStatus: checkLogIn.logInStatus,
   };
+  const date = new Date()
   const sql =
-    "SELECT `class`.`classPeopleLimit`,`class`.`classId`,`class`.`className`,`class`.`classImg`,`class`.`classTime` from `Class`";
+    "SELECT `class`.`classPeopleLimit`,`class`.`classId`,`class`.`className`,`class`.`classImg`,`class`.`classTime` from `Class` WHERE `class`.`classTime` > ?";
   const bookSql =
     "SELECT `Book`.`bookQty`,`Book`.`classId`,`Book`.`bookStatus`,`Book`.`userId` from `Book`";
-  const response = await db.query(sql);
+  const response = await db.query(sql, [date]);
   const bookSqlRes = await db.query(bookSql);
 
   response[0].forEach((element) => {

@@ -703,6 +703,77 @@ router.get("/dashboard", async (req, res) => {
   res.json(output);
 });
 
+
+router.get('/orderhistory', async (req, res) => {
+
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+  //後端撈取訂單資料
+  if (output.logInStatus) {
+    const userId = checkLogIn.userInfo.userId
+    const orderHistorySql = "SELECT `OrderTb`.`orderId`,`OrderTb`.`totalPrice`,`OrderTb`.`orderStatus`,`OrderTb`.`created_at` FROM `OrderTb` WHERE `userId`= ?"
+    const [orderHistoryData] = await db.query(orderHistorySql, [userId])
+
+    //改變時間格式
+    orderHistoryData.forEach((element) => {
+      element.created_at = moment(element.created_at).format("YYYY/MM/DD");
+    });
+
+    //後端撈取寄送資訊
+    const deliverySql = "SELECT `deliveryId`,`orderId` FROM `ordercheckoutpage` WHERE `userId`= ?"
+    const [deliveryData] = await db.query(deliverySql, [userId])
+
+    //取得訂單裡的items
+    const orderItemSql = "SELECT `brand`.`brandName`,`orderitemlist`.`itemId`,`orderitemlist`.`itemimg`,`orderitemlist`.`itemPrice`,`orderitemlist`.`itemName`,`orderitemlist`.`orderId` FROM `orderitemlist` INNER JOIN `items` ON `orderitemlist`.`itemId` = `items`.`itemId` INNER JOIN `brand` ON `items`.`brandId` = `brand`.`brandId` WHERE `userId`= ?"
+    const [orderItemData] = await db.query(orderItemSql, [userId])
+
+    //將與訂單編號相同的deliveryId 加入 orderHistory陣列裡
+    const orderHistory = []
+    orderHistoryData.forEach(el => {
+      deliveryData.forEach(i => {
+        if (el.orderId === i.orderId) {
+          el.deliveryId = i.deliveryId
+          orderHistory.push(el)
+        }
+      })
+    })
+    //將與訂單編號相同的商品加入 orderHistory的陣列裡
+    orderHistory.forEach((el) => {
+      orderItemData.forEach((i, index) => {
+        if (el.orderId === i.orderId) {
+          el.itemId = i.itemId
+          el[i.itemId] = { itemBrand: i.brandName, itemimg: i.itemimg, itemPrice: i.itemPrice, itemName: i.itemName }
+        }
+      })
+    })
+    output.orderHistory = orderHistory
+    output.success = true
+  }
+  console.log(output)
+  res.json(output)
+})
+
+// ========================================== //
+// 取消訂單
+router.patch('/orderhistory/:orderId', async (req, res) => {
+
+  const orderId = req.body.orderId
+  const output = {
+    success: false
+  }
+  const orderSql = 'UPDATE `OrderTb` SET `orderStatus` = "已取消" WHERE `orderId` = ?'
+  const response = await db.query(orderSql, [orderId])
+  if (response[0].affectedRows > 0) {
+    output.success = true
+  }
+  res.json(output)
+})
+
 /* GET users listing. */
 router.get("/", function (req, res, next) {
   res.send("this is user page");

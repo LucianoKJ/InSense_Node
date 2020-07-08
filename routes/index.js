@@ -79,7 +79,11 @@ app.use("/class", require(__dirname + "/class"));
 
 //訂單
 app.use("/orders", require(__dirname + "/orders"));
+//faq
+app.use('/faq', require(__dirname + '/faq'));
 
+//coupon
+app.use('/coupon', require(__dirname + '/coupon'));
 //send mail test
 app.use("/passwordissue", require(__dirname + "/passwordIssue"));
 

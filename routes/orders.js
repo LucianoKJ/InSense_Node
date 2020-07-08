@@ -64,11 +64,12 @@ router.get('/orderdetail/:orderId', async (req, res) => {
     orderId: orderId
   }
 
-  const orderSql = "SELECT `totalPrice` FROM `OrderTb` WHERE `OrderId` = ?"
+  const orderSql = "SELECT `coupon`.`couponDiscount`,`OrderTb`.`totalPrice` FROM `OrderTb` INNER JOIN `coupon` ON `OrderTb`.`couponId` = `coupon`.`couponId` WHERE `OrderId` = ?"
 
-  const [getTotalPrice] = await db.query(orderSql, [orderId])
-  console.log(getTotalPrice)
-  output.totalPrice = getTotalPrice[0].totalPrice
+  const [getOrderInfo] = await db.query(orderSql, [orderId])
+  console.log(getOrderInfo)
+  output.totalPrice = getOrderInfo[0].totalPrice
+  output.couponDiscount = getOrderInfo[0].couponDiscount
 
   const deliverySql = "SELECT `userLastName`,`userFirstName`,`userPostCode`,`userCity`,`userDistrict`,`userAddress`,`userPhone` FROM `ordercheckoutpage` WHERE `orderId` = ?"
 
@@ -109,11 +110,21 @@ router.post("/orderList", async (req, res) => {
     success: false,
     orderId: ''
   }
+
+
   //新增訂單
   const orderDetaildata = {
     userId: req.body.paymentdata.userId,
     orderStatus: '處理中',
     totalPrice: req.body.selectCartTotal
+  }
+
+  //找尋付款時有無優惠券
+  if (req.body.selectCouponCode) {
+    const couponSQL = 'SELECT `couponId`,`couponDiscount` FROM `coupon` WHERE `couponCode` = ?'
+    const [couponDiscount] = await db.query(couponSQL, [req.body.selectCouponCode])
+    orderDetaildata.couponId = couponDiscount[0].couponId
+    orderDetaildata.totalPrice = orderDetaildata.totalPrice - couponDiscount[0].couponDiscount
   }
 
   const orderSQL = 'INSERT INTO `OrderTb` SET ?'

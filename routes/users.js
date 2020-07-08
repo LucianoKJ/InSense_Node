@@ -485,8 +485,8 @@ router.get("/wishlist", async (req, res) => {
           return "?";
         });
         return "WHERE `itemId` in (" + newArray.join(" , ") + ")";
-      }else{
-        return "WHERE `itemId` = '' "
+      } else {
+        return "WHERE `itemId` = '' ";
       }
     };
     // console.log(questionMark());
@@ -659,6 +659,120 @@ router.delete("/creditcarddelete/:id", async (req, res) => {
 
   res.json(output);
 });
+// ======================================================================================= //
+
+//dashboard
+router.get("/dashboard", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const thisYear = new Date().getFullYear();
+    const thisYearFirstDate = new Date(thisYear, 0, 1);
+    console.log(thisYearFirstDate);
+
+    const sqlAnnualAmount =
+      "SELECT `totalPrice` FROM `OrderTb` WHERE `orderStatus` NOT IN ('已取消') AND `userID` = ? AND `created_at` >= ?";
+    const [responseAnnualAmount] = await db.query(sqlAnnualAmount, [
+      req.session.userId,
+      thisYearFirstDate,
+    ]);
+    console.log(responseAnnualAmount);
+
+    //初始化totalAmount
+    output.totalAmount = 0;
+    output.level = 0;
+    //若有任何訂單
+    if (responseAnnualAmount.length) {
+      responseAnnualAmount.forEach((el) => {
+        console.log(el.totalPrice);
+        output.totalAmount += Number(el.totalPrice);
+      });
+
+      output.level = output.totalAmount > 10000 ? 1 : 0;
+      output.success = true;
+    }
+  }
+
+  res.json(output);
+});
+
+
+router.get('/orderhistory', async (req, res) => {
+
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+  //後端撈取訂單資料
+  if (output.logInStatus) {
+    const userId = checkLogIn.userInfo.userId
+    const orderHistorySql = "SELECT `OrderTb`.`orderId`,`OrderTb`.`totalPrice`,`OrderTb`.`orderStatus`,`OrderTb`.`created_at` FROM `OrderTb` WHERE `userId`= ?"
+    const [orderHistoryData] = await db.query(orderHistorySql, [userId])
+
+    //改變時間格式
+    orderHistoryData.forEach((element) => {
+      element.created_at = moment(element.created_at).format("YYYY/MM/DD");
+    });
+
+    //後端撈取寄送資訊
+    const deliverySql = "SELECT `deliveryId`,`orderId` FROM `ordercheckoutpage` WHERE `userId`= ?"
+    const [deliveryData] = await db.query(deliverySql, [userId])
+
+    //取得訂單裡的items
+    const orderItemSql = "SELECT `brand`.`brandName`,`orderitemlist`.`itemId`,`orderitemlist`.`itemimg`,`orderitemlist`.`itemPrice`,`orderitemlist`.`itemName`,`orderitemlist`.`orderId` FROM `orderitemlist` INNER JOIN `items` ON `orderitemlist`.`itemId` = `items`.`itemId` INNER JOIN `brand` ON `items`.`brandId` = `brand`.`brandId` WHERE `userId`= ?"
+    const [orderItemData] = await db.query(orderItemSql, [userId])
+
+    //將與訂單編號相同的deliveryId 加入 orderHistory陣列裡
+    const orderHistory = []
+    orderHistoryData.forEach(el => {
+      deliveryData.forEach(i => {
+        if (el.orderId === i.orderId) {
+          el.deliveryId = i.deliveryId
+          orderHistory.push(el)
+        }
+      })
+    })
+    //將與訂單編號相同的商品加入 orderHistory的陣列裡
+    orderHistory.forEach((el) => {
+      orderItemData.forEach((i, index) => {
+        if (el.orderId === i.orderId) {
+          el.itemId = i.itemId
+          el[i.itemId] = { itemBrand: i.brandName, itemimg: i.itemimg, itemPrice: i.itemPrice, itemName: i.itemName }
+        }
+      })
+    })
+    output.orderHistory = orderHistory
+    output.success = true
+  }
+  console.log(output)
+  res.json(output)
+})
+
+// ========================================== //
+// 取消訂單
+router.patch('/orderhistory/:orderId', async (req, res) => {
+
+  const orderId = req.body.orderId
+  const output = {
+    success: false
+  }
+  const orderSql = 'UPDATE `OrderTb` SET `orderStatus` = "已取消" WHERE `orderId` = ?'
+  const response = await db.query(orderSql, [orderId])
+  if (response[0].affectedRows > 0) {
+    output.success = true
+  }
+  res.json(output)
+})
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {

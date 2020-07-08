@@ -61,7 +61,110 @@ router.post("/passwordforgot", async (req, res) => {
       to: emailTo, // list of receivers
       subject: "InSense密碼更改", // Subject line
       text: "測試寄信內容", // plain text body
-      html: `<h1 style="font-weight:300">${userFirstName}你好</h1><p style="font-size:18px">認證碼為：${verificationNum}</p><p style="font-size:18px">請點以下連結，並使用該認證碼進行密碼更改</p><a href="${passwordForgotlink}"><h3 style="font-weight:200">InSense密碼更改</h3></a>`,
+      html: `<div
+            style="
+                border: solid 2px rgba(99, 129, 168, 0.8);
+                width: 600px;
+                display: block;
+                margin: auto;
+                box-shadow: 2px 6px 10px #ddd;
+            "
+        >
+            <figure style="">
+                <img
+                    src="https://i.ibb.co/Y81VNXY/In-Sense-logo.png"
+                    alt="In-Sense-logo"
+                    style="
+                        width: 200px;
+                        height: 200px;
+                        display: block;
+                        margin: auto;
+                    "
+                    border="0"
+                />
+            </figure>
+            <h2
+                style="
+                    font-weight: 300;
+                    text-align: center;
+                    line-height: 40px;
+                    letter-spacing: 1px;
+                    font-size: 32px;
+                "
+            >
+                ${userFirstName} 您好
+                <!-- 瑞瑜 您好 -->
+            </h2>
+            <p
+                style="
+                    font-weight: 300;
+                    font-size: 18px;
+                    color: #555555;
+                    text-align: center;
+                    line-height: 28px;
+                    letter-spacing: 1px;
+                    margin: 0;
+                "
+            >
+                認證碼為：
+                <span style="font-weight: 400;">
+                    ${verificationNum}
+                </span>
+            </p>
+            <p
+                style="
+                    font-size: 12px;
+                    color: #aaa;
+                    text-align: center;
+                    line-height: 28px;
+                    letter-spacing: 1px;
+                    margin-top: 0;
+                "
+            >
+                (請點以下連結，並使用該認證碼進行密碼更改)
+            </p>
+            <a
+                href="${passwordForgotlink}"
+                target="_blank"
+                style="
+                    text-decoration: none;
+                    border: 1px solid #ec844c;
+                    display: block;
+                    width: 300px;
+                    margin: 42px auto 18px;
+                "
+                onmouseover="this.style.background='#ec844c'; this.firstChild.style.color='white'"
+                onmouseout="this.style.background='transparent'; this.firstChild.style.color='#ec844c'"
+                ><h3
+                    style="
+                        margin: 0;
+                        font-weight: 400;
+                        font-size: 16px;
+                        color: #ec844c;
+                        text-decoration: solid #ec844c 1px;
+                        text-align: center;
+                        letter-spacing: 1px;
+                        line-height: 40px;
+                    "
+                >
+                    InSense密碼更改
+                </h3></a
+            >
+            <p
+                style="
+                    font-weight: 300;
+                    font-size: 12px;
+                    color: white;
+                    text-align: center;
+                    line-height: 48px;
+                    letter-spacing: 1px;
+                    margin: 72px 0 0;
+                    background-color: rgba(99, 129, 168, 0.8);
+                "
+            >
+                InSense Perfume — Copyright © 2000-2020
+            </p>
+        </div>`,
     };
 
     //寄信
@@ -123,8 +226,8 @@ router.patch("/passwordforgotchange", async (req, res) => {
         output.message = "UPDATE_ERROR";
       }
     }
-  }else{
-    output.message = "NO_USER_FOUND"
+  } else {
+    output.message = "NO_USER_FOUND";
   }
 
   res.json(output);

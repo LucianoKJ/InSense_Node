@@ -695,7 +695,7 @@ router.get("/dashboard", async (req, res) => {
         output.totalAmount += Number(el.totalPrice);
       });
 
-      output.level = output.totalAmount > 10000 ? 1 : 0;
+      output.level = output.totalAmount >= 50000 ? 1 : 0;
       output.success = true;
     }
   }

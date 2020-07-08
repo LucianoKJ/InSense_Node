@@ -2,7 +2,6 @@ const express = require("express");
 const db = require(__dirname + "/db_connect");
 const router = express.Router();
 
-
 const nodemailer = require("nodemailer"); // Mail模組
 require("dotenv").config(); // 環境變數s設定
 
@@ -24,19 +23,87 @@ const transporter = nodemailer.createTransport({
 });
 
 //寄更改密碼信
-router.get("/sendcoupon", async (req, res) => {
+router.post("/sendcoupon", async (req, res) => {
   const output = {
     success: false,
     body: req.body.userEmail,
   };
+  console.log(req.body.userEmail);
 
-//信件內容
-const mailOptions = {
+  //信件內容
+  const mailOptions = {
     from: "InSense Perfume <insenseofficial2020@gmail.com>", // sender address
-    to: emailTo, // list of receivers
-    subject: "InSense密碼更改", // Subject line
-    text: "測試寄信內容", // plain text body
-    html: `<h1 style="font-weight:300">${userFirstName}你好</h1><p style="font-size:18px">認證碼為：${verificationNum}</p><p style="font-size:18px">請點以下連結，並使用該認證碼進行密碼更改</p><a href="${passwordForgotlink}"><h3 style="font-weight:200">InSense密碼更改</h3></a>`,
+    to: output.body,
+    subject: " 新客優惠券 ", // Subject line
+    text: " 新客優惠券發放 ", // plain text body
+
+    html: `<div
+            style="
+                border: solid 2px rgba(99, 129, 168, 0.8);
+                width: 600px;
+                display: block;
+                margin: auto;
+                box-shadow: 2px 6px 10px #ddd;
+            "
+        >
+            <figure style="">
+                <img
+                    src="https://i.ibb.co/Y81VNXY/In-Sense-logo.png"
+                    alt="In-Sense-logo"
+                    style="
+                        width: 200px;
+                        height: 200px;
+                        display: block;
+                        margin: auto;
+                    "
+                    border="0"
+                />
+            </figure>
+            <h2
+                style="
+                    font-weight: 300;
+                    text-align: center;
+                    line-height: 40px;
+                    letter-spacing: 1px;
+                    font-size: 32px;
+                "
+            >
+                新客 您好
+                <!-- 瑞瑜 您好 -->
+            </h2>
+            <p
+                style="
+                    font-weight: 300;
+                    font-size: 18px;
+                    color: #555555;
+                    text-align: center;
+                    line-height: 28px;
+                    letter-spacing: 1px;
+                    margin: 0;
+                "
+            >
+                您的優惠碼為：
+                <span style="font-weight: 400;">
+                    JOINSENSE
+                </span>
+            </p>
+            <p
+                style="
+                    font-weight: 300;
+                    font-size: 12px;
+                    color: white;
+                    text-align: center;
+                    line-height: 48px;
+                    letter-spacing: 1px;
+                    margin: 72px 0 0;
+                    background-color: rgba(99, 129, 168, 0.8);
+                "
+            >
+                InSense Perfume — Copyright © 2000-2020
+            </p>
+        </div>`,
+
+  
   };
 
   //寄信
@@ -47,22 +114,15 @@ const mailOptions = {
     }
     res.json(output);
   });
-  
 });
 
+router.get("/", async (req, res) => {
+  console.log(123);
+  const couponCode = `SELECT * FROM coupon`;
 
+  const [codeResponse] = await db.query(couponCode);
 
+  res.json(codeResponse);
+});
 
-router.get('/', async(req,res)=>{
-console.log(123)
-    const couponCode = `SELECT * FROM coupon`
-
-
-    const [codeResponse] = await db.query(couponCode)
-
-    
-    res.json(codeResponse)
-})
-
-module.exports = router
-
+module.exports = router;

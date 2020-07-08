@@ -485,8 +485,8 @@ router.get("/wishlist", async (req, res) => {
           return "?";
         });
         return "WHERE `itemId` in (" + newArray.join(" , ") + ")";
-      }else{
-        return "WHERE `itemId` = '' "
+      } else {
+        return "WHERE `itemId` = '' ";
       }
     };
     // console.log(questionMark());
@@ -654,6 +654,49 @@ router.delete("/creditcarddelete/:id", async (req, res) => {
       output.success = true;
     } else {
       output.message = "DELETE_FAILED";
+    }
+  }
+
+  res.json(output);
+});
+// ======================================================================================= //
+
+//dashboard
+router.get("/dashboard", async (req, res) => {
+  //先檢查登入狀態，記得要有req引數
+  const checkLogIn = await checkLogin(req); //使用checkLogin檢查
+  //統一的output格式
+  const output = {
+    success: false,
+    logInStatus: checkLogIn.logInStatus,
+    userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
+  };
+
+  if (output.logInStatus) {
+    const thisYear = new Date().getFullYear();
+    const thisYearFirstDate = new Date(thisYear, 0, 1);
+    console.log(thisYearFirstDate);
+
+    const sqlAnnualAmount =
+      "SELECT `totalPrice` FROM `OrderTb` WHERE `orderStatus` NOT IN ('已取消') AND `userID` = ? AND `created_at` >= ?";
+    const [responseAnnualAmount] = await db.query(sqlAnnualAmount, [
+      req.session.userId,
+      thisYearFirstDate,
+    ]);
+    console.log(responseAnnualAmount);
+
+    //初始化totalAmount
+    output.totalAmount = 0;
+    output.level = 0;
+    //若有任何訂單
+    if (responseAnnualAmount.length) {
+      responseAnnualAmount.forEach((el) => {
+        console.log(el.totalPrice);
+        output.totalAmount += Number(el.totalPrice);
+      });
+
+      output.level = output.totalAmount > 10000 ? 1 : 0;
+      output.success = true;
     }
   }
 

@@ -60,16 +60,22 @@ router.get("/orderdetail/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
   const output = {
     success: false,
-    orderId: orderId,
-  };
+    orderId: orderId
+  }
 
-  const orderSql =
-    "SELECT `coupon`.`couponDiscount`,`OrderTb`.`totalPrice` FROM `OrderTb` INNER JOIN `coupon` ON `OrderTb`.`couponId` = `coupon`.`couponId` WHERE `OrderId` = ?";
+  const checkCoupon = "SELECT `couponId` FROM `OrderTb` WHERE `orderId` = ?"
+  const [getCheckCoupon] = await db.query(checkCoupon, [orderId])
 
-  const [getOrderInfo] = await db.query(orderSql, [orderId]);
-  console.log("getOrderInfo", getOrderInfo);
-  output.totalPrice = getOrderInfo[0].totalPrice;
-  output.couponDiscount = getOrderInfo[0].couponDiscount;
+  if (!!getCheckCoupon[0].couponId) {
+    const orderSql = "SELECT `coupon`.`couponDiscount`,`OrderTb`.`totalPrice` FROM `OrderTb` INNER JOIN `coupon` ON `OrderTb`.`couponId` = `coupon`.`couponId` WHERE `OrderId` = ?"
+    const [getOrderInfo] = await db.query(orderSql, [orderId])
+    output.totalPrice = getOrderInfo[0].totalPrice
+    output.couponDiscount = getOrderInfo[0].couponDiscount
+  } else {
+    const orderSql = "SELECT `OrderTb`.`totalPrice` FROM `OrderTb` WHERE `OrderId` = ?"
+    const [getOrderInfo] = await db.query(orderSql, [orderId])
+    output.totalPrice = getOrderInfo[0].totalPrice
+  }
 
   const deliverySql =
     "SELECT `userLastName`,`userFirstName`,`userPostCode`,`userCity`,`userDistrict`,`userAddress`,`userPhone` FROM `ordercheckoutpage` WHERE `orderId` = ?";
@@ -119,25 +125,20 @@ router.post("/orderList", async (req, res) => {
   //新增訂單
   const orderDetaildata = {
     userId: req.body.paymentdata.userId,
-    orderStatus: "處理中",
-    totalPrice: req.body.selectCartTotal,
-  };
-
+    orderStatus: '處理中',
+    totalPrice: req.body.selectCartTotal
+  }
+  let couponDiscountValue = 0
   //找尋付款時有無優惠券
   if (req.body.selectCouponCode) {
-    const couponSQL =
-      "SELECT `couponId`,`couponDiscount` FROM `coupon` WHERE `couponCode` = ?";
-    const [couponDiscount] = await db.query(couponSQL, [
-      req.body.selectCouponCode,
-    ]);
-    orderDetaildata.couponId = couponDiscount[0].couponId;
-    orderDetaildata.totalPrice =
-      orderDetaildata.totalPrice - couponDiscount[0].couponDiscount;
+    const couponSQL = 'SELECT `couponId`,`couponDiscount` FROM `coupon` WHERE `couponCode` = ?'
+    const [couponDiscount] = await db.query(couponSQL, [req.body.selectCouponCode])
+    orderDetaildata.couponId = couponDiscount[0].couponId
+    couponDiscountValue = couponDiscount[0].couponDiscount
   }
-
-  const orderSQL = "INSERT INTO `OrderTb` SET ?";
-  const [orderDetail] = await db.query(orderSQL, [orderDetaildata]);
-
+  orderDetaildata.totalPrice = !!orderDetaildata.couponId ? (orderDetaildata.totalPrice - couponDiscountValue) : orderDetaildata.totalPrice
+  const orderSQL = 'INSERT INTO `OrderTb` SET ?'
+  const [orderDetail] = await db.query(orderSQL, [orderDetaildata])
   //增加orderId
   if (orderDetail.affectedRows > 0) {
     const sqlOrderId = "UPDATE `OrderTb` SET `orderId` = ? WHERE id = ? ";

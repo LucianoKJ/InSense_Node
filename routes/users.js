@@ -718,12 +718,13 @@ router.get('/orderhistory', async (req, res) => {
     const userId = checkLogIn.userInfo.userId
     const orderHistorySql = "SELECT `OrderTb`.`orderId`,`OrderTb`.`totalPrice`,`OrderTb`.`orderStatus`,`OrderTb`.`created_at` FROM `OrderTb` WHERE `userId`= ?"
     const [orderHistoryData] = await db.query(orderHistorySql, [userId])
-
+    
     //改變時間格式
     orderHistoryData.forEach((element) => {
       element.created_at = moment(element.created_at).format("YYYY/MM/DD");
     });
-
+    
+    console.log(orderHistoryData)
     //後端撈取寄送資訊
     const deliverySql = "SELECT `deliveryId`,`orderId` FROM `ordercheckoutpage` WHERE `userId`= ?"
     const [deliveryData] = await db.query(deliverySql, [userId])
@@ -754,7 +755,7 @@ router.get('/orderhistory', async (req, res) => {
     output.orderHistory = orderHistory
     output.success = true
   }
-  console.log(output)
+  // console.log(output)
   res.json(output)
 })
 

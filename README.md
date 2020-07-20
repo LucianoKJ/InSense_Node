@@ -11,7 +11,7 @@
 + 主要套件：cors, mysql2, express-session, nodemailer...etc
 
 ### 如何使用？
-+ 下載InSense.sql，並匯入
++ 先在資料庫中，創建一個InSense的資料夾，並匯入InSense.sql
 + 安裝使用套件 / npm install
 + 啟動 / npm start
 

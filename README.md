@@ -8,8 +8,11 @@
 + 基礎技術：node.js, MySql <br />
 + 後端框架：Express.js  <br />
 + 編輯器：vscode <br />
-+ 主要套件：express-session, nodemailer...etc
++ 主要套件：cors, express-session, nodemailer...etc
 
 ### 如何使用？
 + 安裝使用套件 / npm install
 + 啟動 / npm start
+
+### 使用版權
++ 圖片僅能作為模擬使用，不可作為公開商業使用

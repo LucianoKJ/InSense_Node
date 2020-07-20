@@ -11,6 +11,7 @@
 + 主要套件：cors, express-session, nodemailer...etc
 
 ### 如何使用？
++ 下載InSense.sql，並匯入
 + 安裝使用套件 / npm install
 + 啟動 / npm start
 

@@ -8,7 +8,7 @@
 + 基礎技術：node.js, MySql <br />
 + 後端框架：Express.js  <br />
 + 編輯器：vscode <br />
-+ 主要套件：cors, express-session, nodemailer...etc
++ 主要套件：cors, mysql2, express-session, nodemailer...etc
 
 ### 如何使用？
 + 下載InSense.sql，並匯入

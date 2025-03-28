@@ -171,9 +171,9 @@ router.post("/passwordforgot", async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         output.error = error;
-        console.log(error);
+        // console.log(error);
       } else if (info) {
-        console.log(info);
+        // console.log(info);
         output.info = info;
         output.success = true;
       }

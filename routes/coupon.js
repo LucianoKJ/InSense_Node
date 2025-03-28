@@ -28,7 +28,7 @@ router.post("/sendcoupon", async (req, res) => {
     success: false,
     body: req.body.userEmail,
   };
-  console.log(req.body.userEmail);
+  // console.log(req.body.userEmail);
 
   //信件內容
   const mailOptions = {
@@ -117,7 +117,6 @@ router.post("/sendcoupon", async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  console.log(123);
   const couponCode = `SELECT * FROM coupon`;
 
   const [codeResponse] = await db.query(couponCode);

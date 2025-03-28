@@ -4,7 +4,8 @@
   "private": true,
   "main": "routes/index.js",
   "scripts": {
-    "start": "nodemon --exec babel-node ./routes/index",
+    "start": "node ./routes/index",
+    "dev": "nodemon --exec babel-node ./routes/index",
     "start2": "node ./bin/www"
   },
   "dependencies": {

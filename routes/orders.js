@@ -42,7 +42,7 @@ const GetApi = async (req) => {
 
 //test route
 router.get("/test", async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const output = {
     success: false,
   };

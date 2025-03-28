@@ -30,12 +30,12 @@ router.get("/wishlist/:itemId", async (req, res) => {
     itemWish: false,
   };
 
-  console.log(
-    req.session.userEmail,
-    req.session.userPassword,
-    req.session.userId,
-    output.logInStatus
-  );
+  // console.log(
+  //   req.session.userEmail,
+  //   req.session.userPassword,
+  //   req.session.userId,
+  //   output.logInStatus
+  // );
   // ================================== //
   //如果有登入
   if (output.logInStatus) {
@@ -127,7 +127,7 @@ router.patch("/togglebookmark", async (req, res) => {
           return el !== wish;
         });
         const newWishListResponse = await updateWishList(newWishList);
-        console.log(newWishListResponse);
+        // console.log(newWishListResponse);
         if (newWishListResponse[0].affectedRows) {
           output.success = true;
           output.message = "WISH_REMOVE";
@@ -135,7 +135,7 @@ router.patch("/togglebookmark", async (req, res) => {
       } else {
         const newWishList = [...rawWishList, wish];
         const newWishListResponse = await updateWishList(newWishList);
-        console.log(newWishListResponse);
+        // console.log(newWishListResponse);
         if (newWishListResponse[0].affectedRows) {
           output.success = true;
           output.message = "WISH_ADD";

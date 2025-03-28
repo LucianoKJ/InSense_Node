@@ -55,7 +55,7 @@ router.get("/", async (req, res) => {
     output.bookInfo = booked;
     output.success = true;
   }
-  console.log(output);
+  // console.log(output);
   res.json(output);
 });
 

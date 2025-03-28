@@ -13,7 +13,7 @@ router.get("/brand/:brand?/:filterlist?", async (req, res) => {
     // console.log(req.params.brand);
     const filterList = req.params.filterlist ? req.params.filterlist : "";
     const filterArray = filterList.split(",");
-    console.log(filterArray);
+    // console.log(filterArray);
 
     //取得品牌資訊
     const getBrand =
@@ -83,7 +83,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
 
         const itemsResponse = await db.query(getItems, [req.params.name]);
         const itemList = itemsResponse[0];
-        console.log(itemList);
+        // console.log(itemList);
 
         //取得該使用者wishlist
         const getWishList =
@@ -99,7 +99,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
             //清單裡面有東西才做
             if (!!rawData && rawData.length > 2) {
                 const rawWishList = JSON.parse(wishListResponse[0][0].itemId);
-                console.log("rawWishList", rawWishList);
+                // console.log("rawWishList", rawWishList);
 
                 //後端先處理一次wishList（丟回符合該品牌的id）
                 const wishList = rawWishList.filter((wish, index) => {

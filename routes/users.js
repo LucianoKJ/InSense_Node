@@ -23,7 +23,7 @@ router.post("/registration", async (req, res) => {
     userInfo: checkLogIn.userInfo ? checkLogIn.userInfo : null,
   };
 
-  console.log(output);
+  // console.log(output);
 
   //無登入時，才可註冊會員
   if (!output.logInStatus) {
@@ -212,7 +212,7 @@ router.patch("/changepassword", async (req, res) => {
         req.session.userId,
       ]);
 
-      console.log(responseChangePassword[0]);
+      // console.log(responseChangePassword[0]);
       if (responseChangePassword[0].affectedRows > 0) {
         output.success = true;
         output.userInfo = {

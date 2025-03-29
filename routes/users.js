@@ -69,7 +69,7 @@ router.post("/registration", async (req, res) => {
         ]);
 
         const sqlAddWishList =
-          "INSERT INTO `WishList` (`userId`, `itemId`) VALUES (?, ?)";
+          "INSERT INTO `wishlist` (`userId`, `itemId`) VALUES (?, ?)";
 
         const responseAddWishList = await db.query(sqlAddWishList, [
           makeFormatedId(5, "U", insertId),
@@ -456,7 +456,7 @@ router.patch("/creditcardmodify", async (req, res) => {
 //取得所有願望清單function
 const getAllWishList = async (req) => {
   //取得該使用者wishlist
-  const getAllWishList = "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+  const getAllWishList = "SELECT `itemId` FROM `wishlist` WHERE `userId` = ?";
   const wishListResponse = await db.query(getAllWishList, req.session.userId);
   //取得願望清單
   const allWishList = JSON.parse(wishListResponse[0][0].itemId);
@@ -530,7 +530,7 @@ router.delete("/deletewish/:itemId", async (req, res) => {
     console.log(newWishList);
 
     const sqlCancelWish =
-      "UPDATE `WishList` SET `itemId`= ? WHERE `userId` = ? ";
+      "UPDATE `wishlist` SET `itemId`= ? WHERE `userId` = ? ";
     const responseCancelWish = await db.query(sqlCancelWish, [
       JSON.stringify(newWishList),
       req.session.userId,

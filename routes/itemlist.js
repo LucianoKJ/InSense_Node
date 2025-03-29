@@ -87,7 +87,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
 
         //取得該使用者wishlist
         const getWishList =
-            "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+            "SELECT `itemId` FROM `wishlist` WHERE `userId` = ?";
         const wishListResponse = await db.query(
             getWishList,
             req.session.userId

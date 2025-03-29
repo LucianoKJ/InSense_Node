@@ -41,7 +41,7 @@ router.get("/wishlist/:itemId", async (req, res) => {
   if (output.logInStatus) {
     //取得該使用者wishlist
     const getWishList =
-      "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+      "SELECT `itemId` FROM `wishlist` WHERE `userId` = ?";
     const wishListResponse = await db.query(
       getWishList,
       req.session.userId
@@ -90,7 +90,7 @@ router.patch("/togglebookmark", async (req, res) => {
   if (output.logInStatus) {
     //取得該使用者wishlist
     const getWishList =
-      "SELECT `itemId` FROM `WishList` WHERE `userId` = ?";
+      "SELECT `itemId` FROM `wishlist` WHERE `userId` = ?";
     const wishListResponse = await db.query(
       getWishList,
       req.session.userId
@@ -113,7 +113,7 @@ router.patch("/togglebookmark", async (req, res) => {
       const updateWishList = async (newWishList) => {
         const newWishListString = JSON.stringify(newWishList);
         const updateWish =
-          "UPDATE `WishList` SET `itemId`= ? WHERE `userId`= ?";
+          "UPDATE `wishlist` SET `itemId`= ? WHERE `userId`= ?";
         const newWishListResponse = await db.query(updateWish, [
           newWishListString,
           req.session.userId,

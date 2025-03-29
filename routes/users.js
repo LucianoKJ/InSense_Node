@@ -320,7 +320,7 @@ router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
   const userId = req.session.userId;
   const sql =
-    "SELECT `book`.`bookId`,`book`.`bookTime`,`book`.`bookQty`,`book`.`bookStatus`,`class`.`classTime`,`class`.`className`,`class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `book` INNER JOIN `class` ON `book`.`classId` = `class`.`classId` INNER JOIN `ClassCategory` ON `class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `book`.`userId` = ? AND `class`.`classTime` > ? AND `book`.`bookStatus` = '預約成功'";
+    "SELECT `book`.`bookId`,`book`.`bookTime`,`book`.`bookQty`,`book`.`bookStatus`,`class`.`classTime`,`class`.`className`,`class`.`classPrice`,`classcategory`.`classCategoryName` FROM `book` INNER JOIN `class` ON `book`.`classId` = `class`.`classId` INNER JOIN `classcategory` ON `class`.`classCategoryId` = `classcategory`.`classCategoryId` WHERE `book`.`userId` = ? AND `class`.`classTime` > ? AND `book`.`bookStatus` = '預約成功'";
 
   const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
@@ -353,7 +353,7 @@ router.patch("/classList", async (req, res) => {
 router.get("/allclasslist", async (req, res) => {
   const userId = req.session.userId;
   const sql =
-    "SELECT `book`.`bookTime`,`book`.`bookStatus`,`book`.`bookQty`,`class`.`classTime`,`class`.`className`,`class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `book` INNER JOIN `class` ON `book`.`classId` = `class`.`classId` INNER JOIN `ClassCategory` ON `class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `book`.`userId` = ? ";
+    "SELECT `book`.`bookTime`,`book`.`bookStatus`,`book`.`bookQty`,`class`.`classTime`,`class`.`className`,`class`.`classPrice`,`classcategory`.`classCategoryName` FROM `book` INNER JOIN `class` ON `book`.`classId` = `class`.`classId` INNER JOIN `classcategory` ON `class`.`classCategoryId` = `classcategory`.`classCategoryId` WHERE `book`.`userId` = ? ";
 
   const data = await db.query(sql, [userId]);
   data[0].forEach((element) => {

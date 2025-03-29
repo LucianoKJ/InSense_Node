@@ -62,7 +62,7 @@ router.get("/", async (req, res) => {
 // class detail query
 router.get("/classdetail/:classid", async (req, res) => {
   const sql =
-    "SELECT `ClassDescription`.`classId`,`ClassDescription`.`classContent`,`ClassDescription`.`classContent1`,`ClassDescription`.`classContent2`,`ClassDescription`.`classContent3`, `ClassDescription`.`classContent4`, `class`.`className`,`class`.`classImg`, `class`.`classPrice`, `class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`ClassDescription` INNER JOIN`class`ON`ClassDescription`.`classId` = `class`.`classId` INNER JOIN`Shop` ON`ClassDescription`.`shopId` = `Shop`.`shopId` WHERE`ClassDescription`.`classId` = ? ";
+    "SELECT `classdescription`.`classId`,`classdescription`.`classContent`,`classdescription`.`classContent1`,`classdescription`.`classContent2`,`classdescription`.`classContent3`, `classdescription`.`classContent4`, `class`.`className`,`class`.`classImg`, `class`.`classPrice`, `class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`classdescription` INNER JOIN`class`ON`classdescription`.`classId` = `class`.`classId` INNER JOIN`Shop` ON`classdescription`.`shopId` = `Shop`.`shopId` WHERE`classdescription`.`classId` = ? ";
 
   const response = await db.query(sql, [req.params.classid]);
   response[0].forEach((element) => {

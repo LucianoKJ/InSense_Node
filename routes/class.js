@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
   };
   const date = new Date()
   const sql =
-    "SELECT `class`.`classPeopleLimit`,`class`.`classId`,`class`.`className`,`class`.`classImg`,`class`.`classTime` from `Class` WHERE `class`.`classTime` > ?";
+    "SELECT `class`.`classPeopleLimit`,`class`.`classId`,`class`.`className`,`class`.`classImg`,`class`.`classTime` from `class` WHERE `class`.`classTime` > ?";
   const bookSql =
     "SELECT `book`.`bookQty`,`book`.`classId`,`book`.`bookStatus`,`book`.`userId` from `book`";
   const response = await db.query(sql, [date]);
@@ -62,7 +62,7 @@ router.get("/", async (req, res) => {
 // class detail query
 router.get("/classdetail/:classid", async (req, res) => {
   const sql =
-    "SELECT `ClassDescription`.`classId`,`ClassDescription`.`classContent`,`ClassDescription`.`classContent1`,`ClassDescription`.`classContent2`,`ClassDescription`.`classContent3`, `ClassDescription`.`classContent4`, `Class`.`className`,`Class`.`classImg`, `Class`.`classPrice`, `Class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`ClassDescription` INNER JOIN`Class`ON`ClassDescription`.`classId` = `Class`.`classId` INNER JOIN`Shop` ON`ClassDescription`.`shopId` = `Shop`.`shopId` WHERE`ClassDescription`.`classId` = ? ";
+    "SELECT `ClassDescription`.`classId`,`ClassDescription`.`classContent`,`ClassDescription`.`classContent1`,`ClassDescription`.`classContent2`,`ClassDescription`.`classContent3`, `ClassDescription`.`classContent4`, `class`.`className`,`class`.`classImg`, `class`.`classPrice`, `class`.`classTime`, `Shop`.`shopName`, `Shop`.`shopAddress`, `Shop`.`shopPhone`FROM`ClassDescription` INNER JOIN`class`ON`ClassDescription`.`classId` = `class`.`classId` INNER JOIN`Shop` ON`ClassDescription`.`shopId` = `Shop`.`shopId` WHERE`ClassDescription`.`classId` = ? ";
 
   const response = await db.query(sql, [req.params.classid]);
   response[0].forEach((element) => {
@@ -95,7 +95,7 @@ router.post("/classdetail/:classid", async (req, res) => {
       let nowPeople = 0;
       // 取課程最大人數
       const limitPeople =
-        "SELECT `Class`.`classPeopleLimit` FROM Class WHERE `Class`.`classId` = ?";
+        "SELECT `class`.`classPeopleLimit` FROM class WHERE `class`.`classId` = ?";
       // 取得預約人數
       const bookPeople =
         "SELECT `book`.`bookQty`,`book`.`bookStatus` FROM book WHERE `book`.`classId` = ?";

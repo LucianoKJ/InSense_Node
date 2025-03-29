@@ -17,13 +17,13 @@ router.get("/brand/:brand?/:filterlist?", async (req, res) => {
 
     //取得品牌資訊
     const getBrand =
-        "SELECT `Brand`.`brandId`, `Brand`.`brandName`, `Brand`.`brandBanner`,`Brand`.`brandDiscription`,`Brand`.`brandCode` FROM `Brand` WHERE `Brand`.`brandCode`= ? ";
+        "SELECT `brand`.`brandId`, `brand`.`brandName`, `brand`.`brandBanner`,`brand`.`brandDiscription`,`brand`.`brandCode` FROM `brand` WHERE `brand`.`brandCode`= ? ";
 
     const brandResponse = await db.query(getBrand, [req.params.brand]);
 
     //依據品牌，選定商品
     const getItems =
-        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Items`.`itemCategoryId`, `Items`.`brandId`,`Items`.`fragranceId`,`Brand`.`brandName` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
+        "SELECT `Items`.`itemId`, `Items`.`itemName`, `Items`.`itemImg`,`Items`.`itemPrice`,`Items`.`itemCategoryId`, `Items`.`brandId`,`Items`.`fragranceId`,`brand`.`brandName` FROM `Items` INNER JOIN `brand` ON `Items`.`brandId` = `brand`.`brandId` WHERE `brand`.`brandCode`= ?";
 
     const itemsResponse = await db.query(getItems, [req.params.brand]);
     res.json([brandResponse[0], itemsResponse[0]]);
@@ -74,7 +74,7 @@ router.get("/wishlist/:brandOrCategory/:name", async (req, res) => {
 
         const getSql = () => {
             if (req.params.brandOrCategory === "brand") {
-                return "SELECT `Items`.`itemId` FROM `Items` INNER JOIN `Brand` ON `Items`.`brandId` = `Brand`.`brandId` WHERE `Brand`.`brandCode`= ?";
+                return "SELECT `Items`.`itemId` FROM `Items` INNER JOIN `brand` ON `Items`.`brandId` = `brand`.`brandId` WHERE `brand`.`brandCode`= ?";
             } else if (req.params.brandOrCategory === "category") {
                 return "SELECT `Items`.`itemId` FROM `Items` INNER JOIN `ItemCategories` ON `Items`.`itemCategoryId` = `ItemCategories`.`itemCategoryId` WHERE `ItemCategories`.`itemCategoryCode`= ? ";
             }

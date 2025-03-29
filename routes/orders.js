@@ -104,7 +104,7 @@ router.get("/getCreditCardInfo", async (req, res) => {
     success: false,
   };
   const getCreditCardInfoSql =
-    "SELECT `association`,`cdNumber`,`cdMonth`,`cdYear`,`cdHolder`,`billAddressCity`,`billAddressPostCode`,`billAddressDistrict`,`billAddressStreet` FROM `creditcards` WHERE `userId` = ? AND `isDefault` = 1";
+    "SELECT `association`,`cdNumber`,`cdMonth`,`cdYear`,`cdHolder`,`billAddressCity`,`billAddressPostCode`,`billAddressDistrict`,`billAddressStreet` FROM `CreditCards` WHERE `userId` = ? AND `isDefault` = 1";
 
   const [response] = await db.query(getCreditCardInfoSql, [userId]);
   response[0].cdMonth =

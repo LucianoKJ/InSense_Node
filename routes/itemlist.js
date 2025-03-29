@@ -37,7 +37,7 @@ router.get("/category/:category?", async (req, res) => {
 
     //取得分類資訊
     const getCategory =
-        "SELECT `IC`.`itemCategoryId`,`IC`.`itemCategoryName`, `IC`.`itemCategoryBanner` FROM `itemCategories` AS `IC` WHERE `IC`.`itemCategoryCode`=  ? ";
+        "SELECT `IC`.`itemCategoryId`,`IC`.`itemCategoryName`, `IC`.`itemCategoryBanner` FROM `ItemCategories` AS `IC` WHERE `IC`.`itemCategoryCode`=  ? ";
 
     const categoryResponse = await db.query(getCategory, [req.params.category]);
 

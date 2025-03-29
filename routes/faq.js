@@ -2,7 +2,7 @@ const express = require("express");
 const db = require(__dirname + "/db_connect");
 const router = express.Router();
 router.get('/', async(req,res)=>{
-    const faqTitle= "SELECT * FROM `faqTitle` "
+    const faqTitle= "SELECT * FROM `faqtitle` "
 
     const faqTitleResponse = await db.query(faqTitle)
      

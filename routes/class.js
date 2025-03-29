@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
   const sql =
     "SELECT `class`.`classPeopleLimit`,`class`.`classId`,`class`.`className`,`class`.`classImg`,`class`.`classTime` from `Class` WHERE `class`.`classTime` > ?";
   const bookSql =
-    "SELECT `Book`.`bookQty`,`Book`.`classId`,`Book`.`bookStatus`,`Book`.`userId` from `Book`";
+    "SELECT `book`.`bookQty`,`book`.`classId`,`book`.`bookStatus`,`book`.`userId` from `book`";
   const response = await db.query(sql, [date]);
   const bookSqlRes = await db.query(bookSql);
 
@@ -98,7 +98,7 @@ router.post("/classdetail/:classid", async (req, res) => {
         "SELECT `Class`.`classPeopleLimit` FROM Class WHERE `Class`.`classId` = ?";
       // 取得預約人數
       const bookPeople =
-        "SELECT `Book`.`bookQty`,`Book`.`bookStatus` FROM Book WHERE `Book`.`classId` = ?";
+        "SELECT `book`.`bookQty`,`book`.`bookStatus` FROM book WHERE `book`.`classId` = ?";
       const resLimitPeople = await db.query(limitPeople, [data.classId]);
       const resBookPeople = await db.query(bookPeople, [data.classId]);
       // 預約人數加總
@@ -122,10 +122,10 @@ router.post("/classdetail/:classid", async (req, res) => {
     // 如果error不存在 則增加book
     if (!output.error) {
       // 增加book Id
-      const sql = "INSERT INTO Book SET ?";
+      const sql = "INSERT INTO book SET ?";
       const response = await db.query(sql, [data]);
       if (response[0].affectedRows > 0) {
-        const sqlBookId = "UPDATE Book SET `bookId`= ? WHERE id = ?";
+        const sqlBookId = "UPDATE book SET `bookId`= ? WHERE id = ?";
         const insertId = response[0].insertId.toString();
         await db.query(sqlBookId, [
           makeFormatedId(6, "B_", insertId),

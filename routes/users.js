@@ -320,7 +320,7 @@ router.get("/classlist", async (req, res) => {
   const date = new Date().toLocaleDateString();
   const userId = req.session.userId;
   const sql =
-    "SELECT `Book`.`bookId`,`Book`.`bookTime`,`Book`.`bookQty`,`Book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? AND `Class`.`classTime` > ? AND `Book`.`bookStatus` = '預約成功'";
+    "SELECT `book`.`bookId`,`book`.`bookTime`,`book`.`bookQty`,`book`.`bookStatus`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `book` INNER JOIN `Class` ON `book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `book`.`userId` = ? AND `Class`.`classTime` > ? AND `book`.`bookStatus` = '預約成功'";
 
   const data = await db.query(sql, [userId, date]);
   data[0].forEach((element) => {
@@ -338,7 +338,7 @@ router.patch("/classList", async (req, res) => {
   // 取得傳來的預約編號
   const bookId = req.body.bookId;
   const sql =
-    'UPDATE `Book` SET `Book`.`bookStatus` = "取消預約" WHERE `Book`.`bookId` = ? ';
+    'UPDATE `book` SET `book`.`bookStatus` = "取消預約" WHERE `book`.`bookId` = ? ';
   const data = await db.query(sql, [bookId]);
   // 如果有更新則output增加success及data屬性
   if (data[0].affectedRows > 0) {
@@ -353,7 +353,7 @@ router.patch("/classList", async (req, res) => {
 router.get("/allclasslist", async (req, res) => {
   const userId = req.session.userId;
   const sql =
-    "SELECT `Book`.`bookTime`,`Book`.`bookStatus`,`Book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `Book` INNER JOIN `Class` ON `Book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `Book`.`userId` = ? ";
+    "SELECT `book`.`bookTime`,`book`.`bookStatus`,`book`.`bookQty`,`Class`.`classTime`,`Class`.`className`,`Class`.`classPrice`,`ClassCategory`.`classCategoryName` FROM `book` INNER JOIN `Class` ON `book`.`classId` = `Class`.`classId` INNER JOIN `ClassCategory` ON `Class`.`classCategoryId` = `ClassCategory`.`classCategoryId` WHERE `book`.`userId` = ? ";
 
   const data = await db.query(sql, [userId]);
   data[0].forEach((element) => {

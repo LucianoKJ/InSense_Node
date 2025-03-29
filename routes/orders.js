@@ -90,7 +90,7 @@ router.get("/orderdetail/:orderId", async (req, res) => {
   output.creditCardData = getCreditCardData;
 
   const orderItemSql =
-    "SELECT `orderitemlist`.`itemimg`,`orderitemlist`.`itemName`,`orderitemlist`.`itemPrice`,`orderitemlist`.`quantity`,`orderitemlist`.`itemId`,`items`.`itemSize` FROM `orderitemlist` INNER JOIN `items` ON `orderitemlist`.`itemId` = `items`.`itemId` WHERE `orderitemlist`.`orderId`=?";
+    "SELECT `orderitemlist`.`itemimg`,`orderitemlist`.`itemName`,`orderitemlist`.`itemPrice`,`orderitemlist`.`quantity`,`orderitemlist`.`itemId`,`Items`.`itemSize` FROM `orderitemlist` INNER JOIN `Items` ON `orderitemlist`.`itemId` = `Items`.`itemId` WHERE `orderitemlist`.`orderId`=?";
   const [getOrderItem] = await db.query(orderItemSql, [orderId]);
   output.orderItems = getOrderItem;
 

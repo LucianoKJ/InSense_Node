@@ -730,7 +730,7 @@ router.get('/orderhistory', async (req, res) => {
     const [deliveryData] = await db.query(deliverySql, [userId])
 
     //取得訂單裡的items
-    const orderItemSql = "SELECT `brand`.`brandName`,`orderitemlist`.`itemId`,`orderitemlist`.`itemimg`,`orderitemlist`.`itemPrice`,`orderitemlist`.`itemName`,`orderitemlist`.`orderId` FROM `orderitemlist` INNER JOIN `items` ON `orderitemlist`.`itemId` = `items`.`itemId` INNER JOIN `brand` ON `items`.`brandId` = `brand`.`brandId` WHERE `userId`= ?"
+    const orderItemSql = "SELECT `brand`.`brandName`,`orderitemlist`.`itemId`,`orderitemlist`.`itemimg`,`orderitemlist`.`itemPrice`,`orderitemlist`.`itemName`,`orderitemlist`.`orderId` FROM `orderitemlist` INNER JOIN `Items` ON `orderitemlist`.`itemId` = `Items`.`itemId` INNER JOIN `brand` ON `Items`.`brandId` = `brand`.`brandId` WHERE `userId`= ?"
     const [orderItemData] = await db.query(orderItemSql, [userId])
 
     //將與訂單編號相同的deliveryId 加入 orderHistory陣列裡
